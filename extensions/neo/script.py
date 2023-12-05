@@ -11,7 +11,7 @@ import gradio as gr
 import torch
 from transformers import LogitsProcessor
 
-from modules import chat, shared
+from modules import chat, shared,ui_chat
 from modules.text_generation import (
     decode,
     encode,
@@ -139,4 +139,4 @@ def ui():
     To learn about gradio components, check out the docs:
     https://gradio.app/docs/
     """
-    pass
+    ui_chat.create_ui()
