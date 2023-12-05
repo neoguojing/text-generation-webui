@@ -18,7 +18,7 @@ from modules.text_generation import (
     generate_reply,
 )
 
-from apps.main import AsyncioThread
+from extensions.neo.apps.main import AsyncioThread
 params = {
     "display_name": "Example Extension",
     "is_tab": False,
