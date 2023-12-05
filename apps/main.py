@@ -35,12 +35,6 @@ def to_speech(input:str,_from:str):
     msg["from"] = _from
     return msg
 
-        
-async def output_loop():
-    while True:
-        item = await terminator_output.get()
-        print("Output:",item)
-
 # 消费者协程函数
 async def message_bus():
     translator = None
@@ -63,8 +57,7 @@ async def message_bus():
                 terminator_output.put_nowait(out)
             elif item["to"] == TASK_SPEECH:
                 out = await speech.arun(item["data"])
-                if isinstance(out,str):
-                    terminator_output.put_nowait(out)
+                terminator_output.put_nowait(out)
         except Exception as e:
             print(e)
 
@@ -79,7 +72,6 @@ async def main():
     # 并发运行多个异步任务
     await asyncio.gather(
         message_bus(),
-        output_loop(),
         garbage_collection()
         )
 

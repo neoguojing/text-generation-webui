@@ -69,6 +69,7 @@ def load_model(model_name, loader=None):
         'ExLlamav2_HF': ExLlamav2_HF_loader,
         'ctransformers': ctransformers_loader,
         'AutoAWQ': AutoAWQ_loader,
+        'LangchainApp':customer_loader,
     }
 
     metadata = get_model_metadata(model_name)
@@ -275,6 +276,16 @@ def llamacpp_HF_loader(model_name):
     model = LlamacppHF.from_pretrained(model_name)
     return model, tokenizer
 
+def customer_loader(model_name):
+    from modules.customer_model import CustomerModel
+
+    path = Path(f'{shared.args.model_dir}/{model_name}')
+    customer = CustomerModel()
+    if customer.model_type_is_auto():
+        model_file = path
+
+    model, tokenizer = customer.from_pretrained(model_file)
+    return model, tokenizer
 
 def ctransformers_loader(model_name):
     from modules.ctransformers_model import CtransformersModel

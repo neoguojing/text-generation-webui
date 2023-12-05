@@ -143,6 +143,8 @@ loaders_and_params = OrderedDict({
         'no_mmap',
         'mlock'
     ],
+    'LangchainApp': [
+    ],
 })
 
 loaders_samplers = {
@@ -416,6 +418,9 @@ loaders_samplers = {
         'repetition_penalty',
         'repetition_penalty_range',
     },
+    'LangchainApp': {
+
+    },
     'AutoAWQ': {
         'temperature',
         'temperature_last',
@@ -475,6 +480,9 @@ loaders_model_types = {
         "gptbigcode",
         "falcon"
     ],
+    'LangchainApp': {
+        "None",
+    },
 }
 
 
