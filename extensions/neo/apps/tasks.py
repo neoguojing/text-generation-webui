@@ -172,16 +172,20 @@ class TaskFactory:
         if task_type not in TaskFactory._instances:
             with TaskFactory._lock:
                 if task_type not in TaskFactory._instances:
-                    if task_type == TASK_AGENT:
-                        instance = Agent()
-                    elif task_type == TASK_TRANSLATE:
-                        instance = TranslateTask()
-                    elif task_type == TASK_IMAGE_GEN:
-                        instance = ImageGenTask()
-                    elif task_type == TASK_SPEECH:
-                        instance = Speech()
+                    try:
+                        if task_type == TASK_AGENT:
+                            instance = Agent()
+                        elif task_type == TASK_TRANSLATE:
+                            instance = TranslateTask()
+                        elif task_type == TASK_IMAGE_GEN:
+                            instance = ImageGenTask()
+                        elif task_type == TASK_SPEECH:
+                            instance = Speech()
 
-                    TaskFactory._instances[task_type] = instance
+                        TaskFactory._instances[task_type] = instance
+                    except Exception as e:
+                        print(e)
+
 
         return TaskFactory._instances[task_type]
 

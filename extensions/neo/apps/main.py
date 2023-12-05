@@ -78,18 +78,21 @@ async def message_bus():
         item = await input.get()
         # print(f"Consumed: {item}")
         # 模拟消费延迟
-        if item["to"] == TASK_AGENT:
-            out = await agent.arun(item["data"])
-            msg = to_speech(out,"agent")
-            input.put_nowait(msg)
-            terminator_output.put_nowait(out)
-        elif item["to"] == TASK_TRANSLATE:
-            out = await translator.arun(item["data"])
-            terminator_output.put_nowait(out)
-        elif item["to"] == TASK_SPEECH:
-            out = await speech.arun(item["data"])
-            if isinstance(out,str):
+        try:
+            if item["to"] == TASK_AGENT:
+                out = await agent.arun(item["data"])
+                msg = to_speech(out,"agent")
+                input.put_nowait(msg)
                 terminator_output.put_nowait(out)
+            elif item["to"] == TASK_TRANSLATE:
+                out = await translator.arun(item["data"])
+                terminator_output.put_nowait(out)
+            elif item["to"] == TASK_SPEECH:
+                out = await speech.arun(item["data"])
+                if isinstance(out,str):
+                    terminator_output.put_nowait(out)
+        except Exception as e:
+            print(e)
 
 async def garbage_collection():
     while True:
@@ -113,6 +116,9 @@ async def main():
 
 import threading
 class AsyncioThread(threading.Thread):
+    def __init__(self):
+        super().__init__(daemon=True)
+
     def run(self):
         loop = asyncio.get_event_loop()
         try:
@@ -122,11 +128,11 @@ class AsyncioThread(threading.Thread):
         finally:
             loop.close()
 
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(main())
-    except KeyboardInterrupt:
-        print("KeyboardInterrupt: Stopping the event loop")
-    finally:
-        loop.close()
+# if __name__ == '__main__':
+#     loop = asyncio.get_event_loop()
+#     try:
+#         loop.run_until_complete(main())
+#     except KeyboardInterrupt:
+#         print("KeyboardInterrupt: Stopping the event loop")
+#     finally:
+#         loop.close()
