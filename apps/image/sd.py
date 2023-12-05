@@ -15,7 +15,7 @@ top_package_path = os.path.abspath(os.path.join(current_dir, "../../"))
 # 将顶层package路径添加到sys.path
 sys.path.insert(0, top_package_path)
 from diffusers import DiffusionPipeline,DPMSolverMultistepScheduler
-from diffusers import LCMScheduler, AutoPipelineForText2Image
+from diffusers import  AutoPipelineForText2Image
 from diffusers import AutoPipelineForImage2Image
 from diffusers.utils import load_image
 import torch
