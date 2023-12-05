@@ -11,21 +11,15 @@ top_package_path = os.path.abspath(os.path.join(current_dir, ".."))
 sys.path.insert(0, top_package_path)
 import time
 import asyncio
-from abc import ABC, abstractmethod
-import aioconsole
 import copy
 from apps.tasks import TaskFactory,TASK_TRANSLATE,TASK_AGENT,TASK_SPEECH
 from apps.model_factory import ModelFactory
-from apps.recorder import AudioRecorder
 from apps.config import message
-import keyboard
-from evdev import InputDevice, ecodes, categorize
 import pdb
 # 创建一个共享的队列
 input = asyncio.Queue()
 terminator_output = asyncio.Queue()
 
-recorder = AudioRecorder(input)
 
 def to_agent(input:str,_from:str):
     msg = copy.deepcopy(message)
@@ -41,26 +35,6 @@ def to_speech(input:str,_from:str):
     msg["from"] = _from
     return msg
 
-async def keyboard_input():
-    while True:
-        input_text = await aioconsole.ainput("Enter:")
-        input_text = input_text.strip()
-        if len(input_text) > 0:
-            msg = to_agent(input_text,"keyboard")
-            input.put_nowait(msg)
-
-async def keyboard_event():
-    device = InputDevice('/dev/input/event3')  # 替换为实际的设备路径
-    async for event in device.async_read_loop():
-        if event.type == ecodes.EV_KEY and event.code == ecodes.KEY_PAUSE:
-            key_event = categorize(event)
-            if key_event.keystate == key_event.key_up:
-                # 处理 Space 键的键盘事件
-                print(event.code)
-                recorder.on_keypress(event)
-    # keyboard.on_press(recorder.on_keypress)
-    # while True:
-    #     keyboard.wait()
         
 async def output_loop():
     while True:
@@ -100,15 +74,10 @@ async def garbage_collection():
         TaskFactory.release()
         ModelFactory.release()
 
-async def audio_input():
-    await recorder.record()
 
 async def main():
     # 并发运行多个异步任务
     await asyncio.gather(
-        keyboard_input(),
-        keyboard_event(),
-        audio_input(),
         message_bus(),
         output_loop(),
         garbage_collection()
