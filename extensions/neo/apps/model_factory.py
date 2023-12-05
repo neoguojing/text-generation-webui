@@ -26,7 +26,7 @@ import gc
 import weakref
 
 
-from langchain.chat_models import ChatAnthropic,QianfanChatEndpoint
+from langchain.chat_models import QianfanChatEndpoint
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # openai
 os.environ['OPENAI_API_KEY'] = ''
@@ -137,8 +137,6 @@ class ModelFactory:
                     print(f"loading the model {model_name},wait a minute...")
                     if model_name == "openai":
                         instance = OpenAI()
-                    elif model_name == "claude":
-                        instance = ChatAnthropic()
                     elif model_name == "qwen": 
                         # model_path = os.path.join(model_root,"chinese/Qwen-7B-Chat")
                         model_path = os.path.join(model_root,"chinese/Qwen/Qwen-7B-Chat-Int4")
