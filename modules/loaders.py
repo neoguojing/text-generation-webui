@@ -482,6 +482,7 @@ loaders_model_types = {
     ],
     'LangchainApp': {
         "None",
+        "langchain"
     },
 }
 
