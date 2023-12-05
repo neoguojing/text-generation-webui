@@ -44,7 +44,7 @@ async def message_bus():
     agent = TaskFactory.create_task(TASK_AGENT)
     speech = TaskFactory.create_task(TASK_SPEECH)
     while True:
-        item = await input.get()
+        item = input.get()
         # print(f"Consumed: {item}")
         # 模拟消费延迟
         try:
