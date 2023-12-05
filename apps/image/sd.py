@@ -1,6 +1,11 @@
 
 import os
 import sys
+import base64
+import io
+import time
+from datetime import date
+from pathlib import Path
 # 获取当前脚本所在的目录路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -34,13 +39,15 @@ def calculate_md5(string):
     md5_value = md5_hash.hexdigest()
     return md5_value
 
+style = 'style="width: 100%; max-height: 100vh;"'
 class StableDiff(CustomerLLM):
     model_path: str = Field(None, alias='model_path')
     refiner: Any = None
     tokenizer: Any = None
     n_steps: int = 20
     high_noise_frac: float = 0.8
-    file_path: str = "./"
+    file_path: str = "./pics"
+    save_image = True
 
     # def __init__(self, model_path: str=os.path.join(model_root,"stable-diffusion"),**kwargs):
     #     super(StableDiff, self).__init__(
@@ -101,11 +108,10 @@ class StableDiff(CustomerLLM):
 
         image = self.model(prompt=prompt, num_inference_steps=1, guidance_scale=0.0).images[0]
 
-        file_name = calculate_md5(prompt)+".png"
-        path = os.path.join(self.file_path, file_name)
-        image.save(path)
+        # file_name = calculate_md5(prompt)+".png"
+        out = self.handle_output(image)
 
-        return path
+        return out
 
     def get_inputs(self,prompt:str,batch_size=1):
         generator = [torch.Generator("cuda").manual_seed(i) for i in range(batch_size)]
@@ -113,6 +119,28 @@ class StableDiff(CustomerLLM):
 
         return {"prompt": prompts, "generator": generator, "num_inference_steps": self.n_steps}
     
+    def handle_output(self,image):
+        if self.save_image:
+            file = f'{date.today().strftime("%Y_%m_%d")}/{int(time.time())}'  # noqa: E501
+            output_file = Path(f"{self.file_path}/{file}.png")
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+
+            image.save(output_file)
+            image_source = f"/file/{output_file}"
+        else:
+            # resize image to avoid huge logs
+            image.thumbnail((512, 512 * image.height / image.width))
+            buffered = io.BytesIO()
+            image.save(buffered, format="JPEG")
+            buffered.seek(0)
+            image_bytes = buffered.getvalue()
+            image_base64 = (
+                "data:image/jpeg;base64," + base64.b64encode(image_bytes).decode()
+            )
+            image_source = image_base64
+
+        formatted_result += f'<img src="{image_source}" {style}>\n'
+        return formatted_result
     @property
     def _identifying_params(self) -> Mapping[str, Any]:
         """Get the identifying parameters."""

@@ -1,5 +1,9 @@
 import os
 import sys
+from datetime import date
+import time
+from pathlib import Path
+from io import BytesIO
 # 获取当前脚本所在的目录路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -22,6 +26,7 @@ from scipy.io import wavfile
 import pdb
 import librosa
 import numpy as np
+import base64
 
 
 
@@ -184,12 +189,11 @@ class XTTS(CustomerLLM):
     
     model_path: str = Field(None, alias='model_path')
     processor: Any = None
-    file_path: str = "./"
+    file_path: str = "./audo"
     sample_rate: Any = 24000
     save_to_file: bool = False
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
     
-
     def __init__(self, model_path: str = os.path.join(model_root,"XTTS-v2"),**kwargs):
         super(XTTS, self).__init__(llm=Xtts.init_from_config(config))
         self.model_path = model_path
@@ -219,8 +223,32 @@ class XTTS(CustomerLLM):
             gpt_cond_len=3,
             language=generate_speech,
         )
+        return self.handle_output(outputs)
         # print(outputs["wav"])
+    def handle_output(self,audio_data):
+        if self.save_to_file:
+            file = f'{date.today().strftime("%Y_%m_%d")}/{int(time.time())}'  # noqa: E501
+            output_file = Path(f"{self.file_path}/{file}.png")
+            output_file.parent.mkdir(parents=True, exist_ok=True)
 
+            wavfile.write(output_file,rate=self.sample_rate, data=audio_data)
+            audio_source = f"/file/{output_file}"
+        else:
+            # Convert audio data to WAV format
+            wav_bytes = audio_data.astype(np.int16).tobytes()
+            audio_file = BytesIO(wav_bytes)
+
+            # Convert audio file to base64 string
+            audio_base64 = base64.b64encode(audio_file.read()).decode('utf-8')
+            audio_source = "data:audio/wav;base64," + audio_base64
+
+        formatted_result += '<audio controls autoplay="autoplay">'
+        formatted_result += f'<source src="{audio_source}" type="audio/wav">'
+        formatted_result += f'<source src="{audio_source}" type="audio/mp3">'
+        formatted_result += 'Your browser does not support the audio element.'
+        formatted_result += '</audio>\n'
+        return formatted_result
+    
     @property
     def _identifying_params(self) -> Mapping[str, Any]:
         """Get the identifying parameters."""
