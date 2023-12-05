@@ -224,7 +224,8 @@ if __name__ == "__main__":
         if shared.args.lora:
             add_lora_to_model(shared.args.lora)
     else:
-        shared.model, shared.tokenizer = load_model(shared.model_name,'LangchainApp')
+        shared.model_name = "langchain"
+        shared.model, shared.tokenizer = load_model("langchain",'LangchainApp')
 
     shared.generation_lock = Lock()
 
