@@ -15,10 +15,11 @@ import copy
 from apps.tasks import TaskFactory,TASK_TRANSLATE,TASK_AGENT,TASK_SPEECH
 from apps.model_factory import ModelFactory
 from apps.config import message
+import queue
 import pdb
 # 创建一个共享的队列
-input = asyncio.Queue()
-terminator_output = asyncio.Queue()
+input = queue.Queue()
+terminator_output = queue.Queue()
 
 
 def to_agent(input:str,_from:str):

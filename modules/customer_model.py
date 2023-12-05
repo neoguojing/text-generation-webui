@@ -1,7 +1,7 @@
 from modules import shared
 from modules.callbacks import Iteratorize
 from modules.logging_colors import logger
-from apps.main import AsyncioThread,input,terminator_output
+from apps.main import AsyncioThread,input,terminator_output,to_agent,to_speech
 
 class CustomerModel:
     def __init__(self):
@@ -31,7 +31,7 @@ class CustomerModel:
     
     def generate(self, prompt, state, callback=None):
         prompt = prompt if type(prompt) is str else prompt.decode()
-        
+        prompt = to_agent(prompt,"textgen")
         input.put_nowait(prompt)
         output = terminator_output.get()
         return output
