@@ -33,6 +33,7 @@ def create_ui():
 
                     with gr.Column(scale=10, elem_id='chat-input-container'):
                         shared.gradio['textbox'] = gr.Textbox(label='', placeholder='Send a message', elem_id='chat-input', elem_classes=['add_scrollbar'])
+                        shared.gradio['audio'] = gr.Audio(source="microphone",elem_id='audio-input')
                         shared.gradio['show_controls'] = gr.Checkbox(value=shared.settings['show_controls'], label='Show controls (Ctrl+S)', elem_id='show-controls')
                         shared.gradio['typing-dots'] = gr.HTML(value='<div class="typing"><span></span><span class="dot1"></span><span class="dot2"></span></div>', label='typing', elem_id='typing-container')
 
@@ -63,10 +64,6 @@ def create_ui():
             with gr.Row():
                 shared.gradio['send-chat-to-default'] = gr.Button('Send to default')
                 shared.gradio['send-chat-to-notebook'] = gr.Button('Send to notebook')
-
-        with gr.Column("Whisper STT", open=True):
-            with gr.Row():
-                shared.gradio['audio'] = gr.Audio(source="microphone")
 
         with gr.Row(elem_id='past-chats-row'):
             shared.gradio['unique_id'] = gr.Dropdown(label='Past chats', elem_classes=['slim-dropdown'], interactive=not mu)

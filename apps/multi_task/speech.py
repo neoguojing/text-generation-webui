@@ -191,7 +191,7 @@ class XTTS(CustomerLLM):
     processor: Any = None
     file_path: str = "./audo"
     sample_rate: Any = 24000
-    save_to_file: bool = False
+    save_to_file: bool = True
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
     
     def __init__(self, model_path: str = os.path.join(model_root,"XTTS-v2"),**kwargs):
