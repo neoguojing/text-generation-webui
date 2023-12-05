@@ -2,7 +2,7 @@ import sys
 import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-top_package_path = os.path.abspath(os.path.join(current_dir, "..","..",".."))
+top_package_path = os.path.abspath(os.path.join(current_dir, ".."))
 
 sys.path.insert(0, top_package_path)
 
