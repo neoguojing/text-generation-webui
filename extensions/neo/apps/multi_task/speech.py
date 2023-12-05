@@ -19,7 +19,6 @@ from apps.config import model_root
 from langchain.tools import BaseTool
 import datetime
 from scipy.io import wavfile
-import sounddevice as sd
 import pdb
 import librosa
 import numpy as np
@@ -93,7 +92,6 @@ class SeamlessM4t(CustomerLLM):
             # print("2d output",output.shape)
             # output = librosa.resample(output, orig_sr=self.sample_rate, target_sr=44100) #增加采样率
             # print("resample output",output.shape)
-            sd.play(output,self.sample_rate, blocking=False)
             if self.save_to_file:
                 now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
                 file_name = f"{now}_{self.tgt_lang}_{self.sample_rate}.wav"
@@ -222,7 +220,6 @@ class XTTS(CustomerLLM):
             language=generate_speech,
         )
         # print(outputs["wav"])
-        sd.play(outputs["wav"],self.sample_rate, blocking=False)
 
     @property
     def _identifying_params(self) -> Mapping[str, Any]:
