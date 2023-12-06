@@ -34,7 +34,9 @@ class CustomerModel:
         prompt = prompt if type(prompt) is str else prompt.decode()
         output = None
         if isinstance(prompt,str):
+            print("--------input:",prompt)
             output = self.agent.run(prompt)
+            print("--------output:",output)
         else:
             text_output = self.speech.run(prompt)
             analyse_output = self.agent.run(text_output)
