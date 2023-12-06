@@ -114,10 +114,12 @@ def encode(prompt, add_special_tokens=True, add_bos_token=True, truncation_lengt
         raise ValueError('No tokenizer is loaded')
 
     if shared.model.__class__.__name__ in ['LlamaCppModel', 'RWKVModel', 'CtransformersModel',
-                                            'Exllamav2Model','CustomerModel']:
+                                            'Exllamav2Model']:
         input_ids = shared.tokenizer.encode(str(prompt))
         if shared.model.__class__.__name__ not in ['Exllamav2Model']:
             input_ids = np.array(input_ids).reshape(1, len(input_ids))
+    elif shared.model.__class__.__name__ in ['CustomerModel']:
+        return prompt
     else:
         input_ids = shared.tokenizer.encode(str(prompt), return_tensors='pt', add_special_tokens=add_special_tokens)
 
@@ -130,7 +132,7 @@ def encode(prompt, add_special_tokens=True, add_bos_token=True, truncation_lengt
         input_ids = input_ids[:, -truncation_length:]
 
     if shared.model.__class__.__name__ in ['LlamaCppModel', 'RWKVModel', 'ExllamaModel', 'Exllamav2Model',
-                                            'CtransformersModel','CustomerModel'] or shared.args.cpu:
+                                            'CtransformersModel'] or shared.args.cpu:
         return input_ids
     elif shared.args.deepspeed:
         return input_ids.to(device=local_rank)
@@ -139,6 +141,8 @@ def encode(prompt, add_special_tokens=True, add_bos_token=True, truncation_lengt
         return input_ids.to(device)
     elif is_torch_xpu_available():
         return input_ids.to("xpu:0")
+    elif shared.model.__class__.__name__ in ['CustomerModel']:
+        return prompt
     else:
         return input_ids.cuda()
 
