@@ -189,7 +189,7 @@ class XTTS(CustomerLLM):
     
     model_path: str = Field(None, alias='model_path')
     processor: Any = None
-    file_path: str = "/win/text-generation-webui/audo"
+    file_path: str = "./audios"
     sample_rate: Any = 24000
     save_to_file: bool = True
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
@@ -232,7 +232,7 @@ class XTTS(CustomerLLM):
             output_file.parent.mkdir(parents=True, exist_ok=True)
 
             wavfile.write(output_file,rate=self.sample_rate, data=audio_data)
-            audio_source = f"/file/{output_file}"
+            audio_source = f"{output_file}"
         else:
             # Convert audio data to WAV format
             wav_bytes = audio_data.astype(np.int16).tobytes()

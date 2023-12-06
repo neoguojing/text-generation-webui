@@ -153,7 +153,8 @@ def create_interface():
             auth=auth or None,
             ssl_verify=False if (shared.args.ssl_keyfile or shared.args.ssl_certfile) else True,
             ssl_keyfile=shared.args.ssl_keyfile,
-            ssl_certfile=shared.args.ssl_certfile
+            ssl_certfile=shared.args.ssl_certfile,
+            allowed_paths=['pics', 'audios']
         )
 
 

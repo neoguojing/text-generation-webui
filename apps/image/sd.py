@@ -46,7 +46,7 @@ class StableDiff(CustomerLLM):
     tokenizer: Any = None
     n_steps: int = 20
     high_noise_frac: float = 0.8
-    file_path: str = "/win/text-generation-webui/pics"
+    file_path: str = "./pics"
     save_image = True
 
     # def __init__(self, model_path: str=os.path.join(model_root,"stable-diffusion"),**kwargs):
@@ -81,9 +81,9 @@ class StableDiff(CustomerLLM):
                 os.path.join(model_root,"sdxl-turbo"), torch_dtype=torch.float16, variant="fp16"
         ))
         self.model_path = model_path
-        self.model.to(self.device)
+        # self.model.to(self.device)
         # 使用cpu和to('cuda')互斥，内存减小一半
-        # self.model.enable_model_cpu_offload()
+        self.model.enable_model_cpu_offload()
 
 
     @property
@@ -126,7 +126,7 @@ class StableDiff(CustomerLLM):
             output_file.parent.mkdir(parents=True, exist_ok=True)
 
             image.save(output_file)
-            image_source = f"file://{output_file}"
+            image_source = f"file/{output_file}"
         else:
             # resize image to avoid huge logs
             image.thumbnail((512, 512 * image.height / image.width))
@@ -140,7 +140,9 @@ class StableDiff(CustomerLLM):
             image_source = image_base64
 
         formatted_result = f'<img src="{image_source}" {style}>\n'
-        return formatted_result
+        formatted_result.rstrip('\n')
+        result = f"{formatted_result}"
+        return result
     @property
     def _identifying_params(self) -> Mapping[str, Any]:
         """Get the identifying parameters."""

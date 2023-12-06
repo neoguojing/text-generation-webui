@@ -210,7 +210,8 @@ def chatbot_wrapper(text, state, regenerate=False, _continue=False, loading_mess
 
     # Prepare the input
     if not any((regenerate, _continue)):
-        visible_text = html.escape(text)
+        # visible_text = html.escape(text)
+        visible_text = text
 
         # Apply extensions
         text, visible_text = apply_extensions('chat_input', text, visible_text, state)
@@ -251,7 +252,7 @@ def chatbot_wrapper(text, state, regenerate=False, _continue=False, loading_mess
         if state['mode'] in ['chat', 'chat-instruct']:
             visible_reply = re.sub("(<USER>|<user>|{{user}})", state['name1'], reply)
 
-        visible_reply = html.escape(visible_reply)
+        # visible_reply = html.escape(visible_reply)
 
         if shared.stop_everything:
             output['visible'][-1][1] = apply_extensions('output', output['visible'][-1][1], state, is_chat=True)
@@ -366,7 +367,8 @@ def replace_last_reply(text, state):
     if len(text.strip()) == 0:
         return history
     elif len(history['visible']) > 0:
-        history['visible'][-1][1] = html.escape(text)
+        # history['visible'][-1][1] = html.escape(text)
+        history['visible'][-1][1] = text
         history['internal'][-1][1] = apply_extensions('input', text, state, is_chat=True)
 
     return history
@@ -374,7 +376,8 @@ def replace_last_reply(text, state):
 
 def send_dummy_message(text, state):
     history = state['history']
-    history['visible'].append([html.escape(text), ''])
+    # history['visible'].append([html.escape(text), ''])
+    history['visible'].append([text, ''])
     history['internal'].append([apply_extensions('input', text, state, is_chat=True), ''])
     return history
 
@@ -385,7 +388,8 @@ def send_dummy_reply(text, state):
         history['visible'].append(['', ''])
         history['internal'].append(['', ''])
 
-    history['visible'][-1][1] = html.escape(text)
+    # history['visible'][-1][1] = html.escape(text)
+    history['visible'][-1][1] = text
     history['internal'][-1][1] = apply_extensions('input', text, state, is_chat=True)
     return history
 
