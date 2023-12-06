@@ -41,11 +41,6 @@ def create_ui():
                             shared.gradio['Stop'] = gr.Button('Stop', elem_id='stop', visible=False)
                             shared.gradio['Generate'] = gr.Button('Generate', elem_id='Generate', variant='primary')
 
-            with gr.Row(elem_id="multimedia-input-row"):
-                with gr.Column(elem_id='audio-input-container'):
-                    shared.gradio['audio'] = gr.Audio(source="microphone",elem_id='audio-input')
-                with gr.Column(elem_id='image-input-container'):
-                    shared.gradio['image'] = gr.Image(type="pil",height=70,elem_id='image-input')
         # Hover menu buttons
         with gr.Column(elem_id='chat-buttons'):
             with gr.Row():
@@ -68,6 +63,12 @@ def create_ui():
             with gr.Row():
                 shared.gradio['send-chat-to-default'] = gr.Button('Send to default')
                 shared.gradio['send-chat-to-notebook'] = gr.Button('Send to notebook')
+                
+        with gr.Row(elem_id="multimedia-input-row"):
+                with gr.Column(elem_id='audio-input-container'):
+                    shared.gradio['audio'] = gr.Audio(source="microphone",elem_id='audio-input')
+                with gr.Column(elem_id='image-input-container'):
+                    shared.gradio['image'] = gr.Image(type="pil",height=70,elem_id='image-input')
 
         with gr.Row(elem_id='past-chats-row'):
             shared.gradio['unique_id'] = gr.Dropdown(label='Past chats', elem_classes=['slim-dropdown'], interactive=not mu)
