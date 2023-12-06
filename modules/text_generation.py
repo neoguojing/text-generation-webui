@@ -32,9 +32,7 @@ def generate_reply(*args, **kwargs):
     finally:
         shared.generation_lock.release()
 
-# import pdb
 def _generate_reply(question, state, stopping_strings=None, is_chat=False, escape_html=False):
-    # pdb.set_trace()
     # Find the appropriate generation function
     generate_func = apply_extensions('custom_generate_reply')
     if generate_func is None:
