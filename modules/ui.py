@@ -163,6 +163,8 @@ def list_interface_input_elements():
         'turn_template',
         'chat_style',
         'chat-instruct_command',
+        'audio',
+        'image',
     ]
 
     # Notebook/default elements
