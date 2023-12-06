@@ -46,7 +46,7 @@ class StableDiff(CustomerLLM):
     tokenizer: Any = None
     n_steps: int = 20
     high_noise_frac: float = 0.8
-    file_path: str = "./pics"
+    file_path: str = "/win/text-generation-webui/pics"
     save_image = True
 
     # def __init__(self, model_path: str=os.path.join(model_root,"stable-diffusion"),**kwargs):
@@ -126,7 +126,7 @@ class StableDiff(CustomerLLM):
             output_file.parent.mkdir(parents=True, exist_ok=True)
 
             image.save(output_file)
-            image_source = f"/file/{output_file}"
+            image_source = f"file://{output_file}"
         else:
             # resize image to avoid huge logs
             image.thumbnail((512, 512 * image.height / image.width))
@@ -139,7 +139,7 @@ class StableDiff(CustomerLLM):
             )
             image_source = image_base64
 
-        formatted_result += f'<img src="{image_source}" {style}>\n'
+        formatted_result = f'<img src="{image_source}" {style}>\n'
         return formatted_result
     @property
     def _identifying_params(self) -> Mapping[str, Any]:

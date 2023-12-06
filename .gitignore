@@ -47,3 +47,5 @@ wandb
 /docker-compose.yml
 /Dockerfile
 .env
+
+pics/

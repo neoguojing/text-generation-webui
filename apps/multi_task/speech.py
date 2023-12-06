@@ -189,7 +189,7 @@ class XTTS(CustomerLLM):
     
     model_path: str = Field(None, alias='model_path')
     processor: Any = None
-    file_path: str = "./audo"
+    file_path: str = "/win/text-generation-webui/audo"
     sample_rate: Any = 24000
     save_to_file: bool = True
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
@@ -242,7 +242,7 @@ class XTTS(CustomerLLM):
             audio_base64 = base64.b64encode(audio_file.read()).decode('utf-8')
             audio_source = "data:audio/wav;base64," + audio_base64
 
-        formatted_result += '<audio controls autoplay="autoplay">'
+        formatted_result = '<audio controls autoplay="autoplay">'
         formatted_result += f'<source src="{audio_source}" type="audio/wav">'
         formatted_result += f'<source src="{audio_source}" type="audio/mp3">'
         formatted_result += 'Your browser does not support the audio element.'

@@ -139,8 +139,8 @@ class ModelFactory:
                         instance = OpenAI()
                     elif model_name == "qwen": 
                         # model_path = os.path.join(model_root,"chinese/Qwen-7B-Chat")
-                        # model_path = os.path.join(model_root,"chinese/Qwen/Qwen-7B-Chat-Int4")
-                        model_path = os.path.join(model_root,"chinese/Qwen/Qwen-1_8B-Chat-Int8")
+                        model_path = os.path.join(model_root,"chinese/Qwen/Qwen-7B-Chat-Int4")
+                        # model_path = os.path.join(model_root,"chinese/Qwen/Qwen-1_8B-Chat-Int8")
                         instance = QwenLLM(model_path=model_path)
                     elif model_name == "qianfan": 
                         instance = QianfanChatEndpoint(streaming=True, model="ERNIE-Bot-4")
