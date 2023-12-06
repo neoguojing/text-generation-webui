@@ -51,7 +51,7 @@ settings = {
     'ban_eos_token': False,
     'add_bos_token': True,
     'skip_special_tokens': True,
-    'stream': True,
+    'stream': False,
     'character': 'Assistant',
     'name1': 'You',
     'instruction_template': 'Alpaca',
