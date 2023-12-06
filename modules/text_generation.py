@@ -32,9 +32,9 @@ def generate_reply(*args, **kwargs):
     finally:
         shared.generation_lock.release()
 
-
+import pdb
 def _generate_reply(question, state, stopping_strings=None, is_chat=False, escape_html=False):
-
+    pdb.set_trace()
     # Find the appropriate generation function
     generate_func = apply_extensions('custom_generate_reply')
     if generate_func is None:
@@ -73,9 +73,9 @@ def _generate_reply(question, state, stopping_strings=None, is_chat=False, escap
     last_update = -1
     reply = ''
     is_stream = state['stream']
-    if len(all_stop_strings) > 0 and not state['stream']:
-        state = copy.deepcopy(state)
-        state['stream'] = True
+    # if len(all_stop_strings) > 0 and not state['stream']:
+    #     state = copy.deepcopy(state)
+    #     state['stream'] = True
 
     # Generate
     for reply in generate_func(question, original_question, seed, state, stopping_strings, is_chat=is_chat):
@@ -379,13 +379,12 @@ def generate_reply_HF(question, original_question, seed, state, stopping_strings
         print(f'Output generated in {(t1-t0):.2f} seconds ({new_tokens/(t1-t0):.2f} tokens/s, {new_tokens} tokens, context {original_tokens}, seed {seed})')
         return
 
-import pdb
 def generate_reply_custom(question, original_question, seed, state, stopping_strings=None, is_chat=False):
     """
     For models that do not use the transformers library for sampling
     """
     seed = set_manual_seed(state['seed'])
-    pdb.set_trace()
+    
     t0 = time.time()
     reply = ''
     try:
