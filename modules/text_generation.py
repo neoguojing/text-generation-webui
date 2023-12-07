@@ -391,7 +391,7 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
             yield ''
         pdb.set_trace()
         if question is None or question.strip()=="":
-            yield ''
+            return
 
         
         if not state['stream']:
