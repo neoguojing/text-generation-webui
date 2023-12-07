@@ -130,3 +130,22 @@ def get_available_chat_styles():
 
 def get_available_grammars():
     return ['None'] + sorted([item.name for item in list(Path('grammars').glob('*.gbnf'))], key=natural_keys)
+
+from datetime import date
+from scipy.io import wavfile
+import time
+def audio_save(audio_data,sample_rate,file_path="./audio/input"):
+        
+    file = f'{date.today().strftime("%Y_%m_%d")}/{int(time.time())}'  # noqa: E501
+    output_file = Path(f"{file_path}/{file}.wav")
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    wavfile.write(output_file,rate=sample_rate, data=audio_data)
+    audio_source = f"file/{output_file}"
+
+    formatted_result = '<audio controls autoplay="autoplay">'
+    formatted_result += f'<source src="{audio_source}" type="audio/wav">'
+    formatted_result += f'<source src="{audio_source}" type="audio/mp3">'
+    formatted_result += 'Your browser does not support the audio element.'
+    formatted_result += '</audio>\n'
+    return formatted_result,output_file

@@ -24,7 +24,8 @@ from modules.utils import (
     delete_file,
     get_available_characters,
     replace_all,
-    save_file
+    save_file,
+    audio_save
 )
 
 
@@ -347,6 +348,21 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
     for i, history in enumerate(generate_chat_reply(text, state, regenerate, _continue, loading_message=True)):
         yield chat_html_wrapper(history, state['name1'], state['name2'], state['mode'], state['chat_style']), history
 
+def audio2text_wrapper(record_audio, state, regenerate=False, _continue=False):
+    '''
+    Same as above but returns HTML for the UI
+    '''
+    
+    rate, y = record_audio
+    print("sample rate:",rate)
+    print("sample shape:",y.shape)
+    text = 'hello'
+
+    fmt_result,_ = audio_save(y,rate)
+    # if shared.model.__class__.__name__ in ['CustomerModel']:
+    #     text = shared.model.audio2text(y)
+
+    return text,fmt_result
 
 def remove_last_message(history):
     if len(history['visible']) > 0 and history['internal'][-1][0] != '<|BEGIN-VISIBLE-CHAT|>':

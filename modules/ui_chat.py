@@ -10,7 +10,7 @@ from modules.html_generator import chat_html_wrapper
 from modules.text_generation import stop_everything_event
 from modules.utils import gradio
 
-inputs = ('Chat input', 'interface_state')
+inputs = ('Chat input','Audio input','Image input' 'interface_state')
 reload_arr = ('history', 'name1', 'name2', 'mode', 'chat_style')
 clear_arr = ('delete_chat-confirm', 'delete_chat', 'delete_chat-cancel')
 
@@ -19,6 +19,8 @@ def create_ui():
     mu = shared.args.multi_user
 
     shared.gradio['Chat input'] = gr.State()
+    shared.gradio['Audio input'] = gr.State()
+    shared.gradio['Image input'] = gr.State()
     shared.gradio['dummy'] = gr.State()
     shared.gradio['history'] = gr.State({'internal': [], 'visible': []})
 
@@ -66,7 +68,7 @@ def create_ui():
                 
         with gr.Row(elem_id="multimedia-input-row"):
                 with gr.Column(elem_id='audio-input-container'):
-                    shared.gradio['audio'] = gr.Audio(source="microphone",elem_id='audio-input')
+                    shared.gradio['audio'] = gr.Audio(source="microphone",elem_id='audio-input',type)
                 with gr.Column(elem_id='image-input-container'):
                     shared.gradio['image'] = gr.Image(type="pil",height=70,elem_id='image-input')
 
@@ -176,6 +178,16 @@ def create_event_handlers():
 
     shared.gradio['textbox'].submit(
         ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
+        lambda x: (x, ''), gradio('textbox'), gradio('Chat input', 'textbox'), show_progress=False).then(
+        chat.generate_chat_reply_wrapper, gradio(inputs), gradio('display', 'history'), show_progress=False).then(
+        ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
+        chat.save_history, gradio('history', 'unique_id', 'character_menu', 'mode'), None).then(
+        lambda: None, None, None, _js=f'() => {{{ui.audio_notification_js}}}')
+    
+    shared.gradio['audio'].stop_recording(
+        ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
+        lambda x: (x, None), gradio('audio'), gradio('Audio input', 'audio'), show_progress=False).then(
+        chat.audio2text_wrapper, gradio(inputs), gradio('Chat input','display', 'history'), show_progress=False).then(
         lambda x: (x, ''), gradio('textbox'), gradio('Chat input', 'textbox'), show_progress=False).then(
         chat.generate_chat_reply_wrapper, gradio(inputs), gradio('display', 'history'), show_progress=False).then(
         ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(

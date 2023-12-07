@@ -45,6 +45,14 @@ class CustomerModel:
             audio_output = self.speech.run(analyse_output)
             output = audio_output
         return output
+    
+    def audio2text(self, audio_data):
+        text_output = self.speech.run(audio_data)
+        return text_output
+    
+    def text2audio(self, text):
+        audio_output = self.speech.run(text)
+        return audio_output
 
     def generate_with_streaming(self, *args, **kwargs):
         with Iteratorize(self.generate, args, kwargs, callback=None) as generator:
