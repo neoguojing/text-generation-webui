@@ -38,7 +38,6 @@ os.environ["DASHSCOPE_API_KEY"] = ""
 
 class LLamaLLM(CustomerLLM):
     model_path: str = Field(None, alias='model_path')
-    tokenizer: Any = None
     chat_format: Optional[str]   = 'llama'
     max_window_size: Optional[int]   = 3096
 
@@ -47,8 +46,6 @@ class LLamaLLM(CustomerLLM):
         super(LLamaLLM, self).__init__(llm=model)
         self.model_path: str = model_path
         self.tokenizer = tokenizer
-        
-
         
 
     @property
@@ -78,8 +75,6 @@ class LLamaLLM(CustomerLLM):
 
 class QwenLLM(CustomerLLM):
     model_path: str = Field(None, alias='model_path')
-
-    tokenizer: Any = None
     chat_format: Optional[str]   = 'chatml'
     max_window_size: Optional[int]   = 8192
     stop = ["Observation:", "Observation:\n","\nObservation:"]

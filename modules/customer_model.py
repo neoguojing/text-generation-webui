@@ -25,10 +25,12 @@ class CustomerModel:
         return path
 
     def encode(self, string, **kwargs):
-        return string
+        ids = self.agent.encode(string)
+        return ids
 
     def decode(self, ids):
-        return ids
+        string = self.agent.decode(ids)
+        return string
     
     def generate(self, prompt, state, callback=None):
         prompt = prompt if type(prompt) is str else prompt.decode()

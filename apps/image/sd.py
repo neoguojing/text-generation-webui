@@ -43,7 +43,6 @@ style = 'style="width: 100%; max-height: 100vh;"'
 class StableDiff(CustomerLLM):
     model_path: str = Field(None, alias='model_path')
     refiner: Any = None
-    tokenizer: Any = None
     n_steps: int = 20
     high_noise_frac: float = 0.8
     file_path: str = "./pics"
@@ -152,7 +151,6 @@ class StableDiff(CustomerLLM):
 class Image2Image(CustomerLLM):
     model_path: str = Field(None, alias='model_path')
     refiner: Any = None
-    tokenizer: Any = None
     n_steps: int = 20
     high_noise_frac: float = 0.8
     file_path: str = "./"

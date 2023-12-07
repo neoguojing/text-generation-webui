@@ -20,7 +20,6 @@ from apps.config import model_root
 # BCP47 code https://github.com/facebookresearch/flores/blob/main/flores200/README.md#languages-in-flores-200
 class Translate(CustomerLLM):
     model_path: str = ""
-    tokenizer: Any = None
     src_lang: str = "eng_Latn" 
     dst_lang: str = "zho_Hans"
 

@@ -19,6 +19,8 @@ class ITask(abc.ABC):
 class CustomerLLM(LLM):
     device: str = Field(torch.device('cpu'))
     model: Any = None
+    tokenizer: Any = None
+
     def __init__(self,llm,**kwargs):
         super(CustomerLLM, self).__init__()
         if torch.cuda.is_available():
@@ -33,6 +35,16 @@ class CustomerLLM(LLM):
             torch.cuda.empty_cache()
             print(f"model {self.model_name} destroy success")
 
+    def encode(self,input):
+        if self.tokenizer is not None:
+            return self.tokenizer.encode(input)
+        return None
+        
+    def decode(self,ids):
+        if self.tokenizer is not None:
+            return self.tokenizer.decode(ids)
+        return ""
+    
     @property
     def model_name(self) -> str:
         return ""
@@ -126,4 +138,9 @@ class Task(ITask):
             return names
         return None
 
-
+    def encode(self,input):
+        return self.excurtor[0].encode(input)
+ 
+        
+    def decode(self,ids):
+        self.excurtor[0].decode(input)

@@ -228,11 +228,11 @@ class XTTS(CustomerLLM):
     def handle_output(self,audio_data):
         if self.save_to_file:
             file = f'{date.today().strftime("%Y_%m_%d")}/{int(time.time())}'  # noqa: E501
-            output_file = Path(f"{self.file_path}/{file}.png")
+            output_file = Path(f"{self.file_path}/{file}.wav")
             output_file.parent.mkdir(parents=True, exist_ok=True)
 
             wavfile.write(output_file,rate=self.sample_rate, data=audio_data)
-            audio_source = f"{output_file}"
+            audio_source = f"file/{output_file}"
         else:
             # Convert audio data to WAV format
             wav_bytes = audio_data.astype(np.int16).tobytes()
