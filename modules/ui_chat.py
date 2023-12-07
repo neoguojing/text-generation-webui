@@ -24,15 +24,15 @@ def create_ui():
     shared.gradio['dummy'] = gr.State()
     shared.gradio['history'] = gr.State({'internal': [], 'visible': []})
 
+    with gr.Column():
+        with gr.Row(elem_id='audio-input-container'):
+            shared.gradio['audio'] = gr.Audio(source="microphone",elem_id='audio-input')
+        with gr.Row(elem_id='image-input-container'):
+            shared.gradio['image'] = gr.Image(type="pil",elem_id='image-input')
+
     with gr.Tab('Chat', elem_id='chat-tab', elem_classes=("old-ui" if shared.args.chat_buttons else None)):
         with gr.Row():
-            with gr.Column(scale=1):
-                with gr.Row(elem_id='audio-input-container'):
-                    shared.gradio['audio'] = gr.Audio(source="microphone",elem_id='audio-input')
-                with gr.Row(elem_id='image-input-container'):
-                    shared.gradio['image'] = gr.Image(type="pil",elem_id='image-input')
-
-            with gr.Column(elem_id='chat-col',scale=2):
+            with gr.Column(elem_id='chat-col'):
                 shared.gradio['display'] = gr.HTML(value=chat_html_wrapper({'internal': [], 'visible': []}, '', '', 'chat', 'cai-chat'))
 
                 with gr.Row(elem_id="chat-input-row"):
