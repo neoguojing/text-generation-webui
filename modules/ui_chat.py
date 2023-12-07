@@ -31,7 +31,7 @@ def create_ui():
             with gr.Row(elem_id='image-input-container'):
                 shared.gradio['image'] = gr.Image(type="pil",elem_id='image-input')
 
-        with gr.Column(elem_id='chat-col',scale=10):
+        with gr.Column(elem_id='chat-col',scale=2):
             shared.gradio['display'] = gr.HTML(value=chat_html_wrapper({'internal': [], 'visible': []}, '', '', 'chat', 'cai-chat'))
 
             with gr.Row(elem_id="chat-input-row"):
