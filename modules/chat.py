@@ -349,7 +349,7 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
         print("generate_chat_reply_wrapper history:",history)
         yield chat_html_wrapper(history, state['name1'], state['name2'], state['mode'], state['chat_style']), history
 
-def audio2text_wrapper(record_audio, regenerate=False, _continue=False):
+def audio2text_wrapper(record_audio,state, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
     '''
@@ -362,8 +362,25 @@ def audio2text_wrapper(record_audio, regenerate=False, _continue=False):
     fmt_result,_ = audio_save(y,rate)
     # if shared.model.__class__.__name__ in ['CustomerModel']:
     #     text = shared.model.audio2text(y)
+    state['history'] = {'internal': [text], 'visible': [fmt_result]}
+    return text,chat_html_wrapper(state["history"], state['name1'], state['name2'], state['mode'], state['chat_style']),state['history']
 
-    return text,fmt_result,fmt_result
+def image_input_wrapper(record_audio,state, regenerate=False, _continue=False):
+    '''
+    Same as above but returns HTML for the UI
+    '''
+    
+    rate, y = record_audio
+    print("sample rate:",rate)
+    print("sample shape:",y.shape)
+    text = 'hello'
+
+    fmt_result,_ = audio_save(y,rate)
+    # if shared.model.__class__.__name__ in ['CustomerModel']:
+    #     text = shared.model.audio2text(y)
+    state['history'] = {'internal': [text], 'visible': [fmt_result]}
+    return text,chat_html_wrapper(state["history"], state['name1'], state['name2'], state['mode'], state['chat_style']),state['history']
+
 
 def remove_last_message(history):
     if len(history['visible']) > 0 and history['internal'][-1][0] != '<|BEGIN-VISIBLE-CHAT|>':
