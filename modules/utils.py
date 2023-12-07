@@ -147,7 +147,7 @@ def audio_save(audio_data,sample_rate,file_path="./audio/input"):
     formatted_result += f'<source src="{audio_source}" type="audio/wav">'
     formatted_result += f'<source src="{audio_source}" type="audio/mp3">'
     formatted_result += 'Your browser does not support the audio element.'
-    formatted_result += '</audio>\n'
+    formatted_result += '</audio>'
     return formatted_result,output_file
 
 def image_save(image_obj,file_path="./pics/input"):
@@ -156,5 +156,5 @@ def image_save(image_obj,file_path="./pics/input"):
     output_file.parent.mkdir(parents=True, exist_ok=True)
     style = 'style="width: 100%; max-height: 100vh;"'
     image_obj.save(output_file)
-    formatted_result = f'<img src="file/{output_file}" {style}>\n'
+    formatted_result = f'<img src="file/{output_file}" {style}>'
     return formatted_result,output_file
