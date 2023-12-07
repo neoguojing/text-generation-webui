@@ -240,7 +240,7 @@ def chatbot_wrapper(text, state, regenerate=False, _continue=False, loading_mess
         'history': output,
     }
     prompt = apply_extensions('custom_generate_chat_prompt', text, state, **kwargs)
-    if prompt is None:
+    if prompt is None and shared.model_name !="langchain":
         prompt = generate_chat_prompt(text, state, **kwargs)
 
     # Generate
@@ -327,7 +327,7 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
     '''
-    pdb.set_trace()
+    # pdb.set_trace()
     if not character_is_loaded(state):
         return
 
