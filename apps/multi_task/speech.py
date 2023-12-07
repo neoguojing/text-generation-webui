@@ -172,6 +172,8 @@ class Whisper(CustomerLLM):
             return prompt
         print(prompt.shape)
         prompt= np.squeeze(prompt)
+        if np.ndim(prompt) > 1:
+            prompt = np.squeeze(prompt)
         print(prompt.shape)
         result = self.pipe(prompt)
         return result["text"]

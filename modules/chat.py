@@ -346,6 +346,7 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
         send_dummy_reply(state['start_with'], state)
 
     for i, history in enumerate(generate_chat_reply(text, state, regenerate, _continue, loading_message=True)):
+        print("generate_chat_reply_wrapper history:",history)
         yield chat_html_wrapper(history, state['name1'], state['name2'], state['mode'], state['chat_style']), history
 
 def audio2text_wrapper(record_audio, regenerate=False, _continue=False):
@@ -362,7 +363,7 @@ def audio2text_wrapper(record_audio, regenerate=False, _continue=False):
     # if shared.model.__class__.__name__ in ['CustomerModel']:
     #     text = shared.model.audio2text(y)
 
-    return text,fmt_result,text
+    return text,fmt_result,fmt_result
 
 def remove_last_message(history):
     if len(history['visible']) > 0 and history['internal'][-1][0] != '<|BEGIN-VISIBLE-CHAT|>':
@@ -444,6 +445,7 @@ def get_history_file_path(unique_id, character, mode):
 
 
 def save_history(history, unique_id, character, mode):
+    print("save_history history:",history)
     if shared.args.multi_user:
         return
 
