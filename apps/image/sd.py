@@ -139,7 +139,6 @@ class StableDiff(CustomerLLM):
             image_source = image_base64
 
         formatted_result = f'<img src="{image_source}" {style}>\n'
-        formatted_result.rstrip('\n')
         result = f"{formatted_result}"
         return result
     @property

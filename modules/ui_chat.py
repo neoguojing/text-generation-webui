@@ -196,8 +196,7 @@ def create_event_handlers():
     shared.gradio['image'].upload(
         ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
         lambda x: (x, None), gradio('image'), gradio('Image input', 'image'), show_progress=False).then(
-        chat.image_input_wrapper, gradio('Image input','interface_state'), gradio('Chat input','display', 'history'), show_progress=False).then(
-        chat.generate_chat_reply_wrapper, gradio(inputs), gradio('display', 'history'), show_progress=False).then(
+        chat.image_input_wrapper, gradio('Image input','interface_state'), gradio('display', 'history'), show_progress=False).then(
         ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
         chat.save_history, gradio('history', 'unique_id', 'character_menu', 'mode'), None).then(
         lambda: None, None, None, _js=f'() => {{{ui.audio_notification_js}}}')

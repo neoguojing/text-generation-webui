@@ -25,7 +25,8 @@ from modules.utils import (
     get_available_characters,
     replace_all,
     save_file,
-    audio_save
+    audio_save,
+    image_save
 )
 
 
@@ -365,21 +366,14 @@ def audio2text_wrapper(record_audio,state, regenerate=False, _continue=False):
     state['history'] = {'internal': [text], 'visible': [fmt_result]}
     return text,chat_html_wrapper(state["history"], state['name1'], state['name2'], state['mode'], state['chat_style']),state['history']
 
-def image_input_wrapper(record_audio,state, regenerate=False, _continue=False):
+def image_input_wrapper(image_obj,state, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
     '''
     
-    rate, y = record_audio
-    print("sample rate:",rate)
-    print("sample shape:",y.shape)
-    text = 'hello'
-
-    fmt_result,_ = audio_save(y,rate)
-    # if shared.model.__class__.__name__ in ['CustomerModel']:
-    #     text = shared.model.audio2text(y)
-    state['history'] = {'internal': [text], 'visible': [fmt_result]}
-    return text,chat_html_wrapper(state["history"], state['name1'], state['name2'], state['mode'], state['chat_style']),state['history']
+    fmt_result,_ = image_save(image_obj)
+    state['history'] = {'internal': [fmt_result], 'visible': [fmt_result]}
+    return chat_html_wrapper(state["history"], state['name1'], state['name2'], state['mode'], state['chat_style']),state['history']
 
 
 def remove_last_message(history):

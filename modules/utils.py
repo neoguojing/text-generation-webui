@@ -149,3 +149,12 @@ def audio_save(audio_data,sample_rate,file_path="./audio/input"):
     formatted_result += 'Your browser does not support the audio element.'
     formatted_result += '</audio>\n'
     return formatted_result,output_file
+
+def image_save(image_obj,file_path="./pics/input"):
+    file = f'{date.today().strftime("%Y_%m_%d")}/{int(time.time())}'  # noqa: E501
+    output_file = Path(f"{file_path}/{file}.png")
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    style = 'style="width: 100%; max-height: 100vh;"'
+    image_obj.save(output_file)
+    formatted_result = f'<img src="file/{output_file}" {style}>\n'
+    return formatted_result,output_file
