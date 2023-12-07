@@ -394,7 +394,7 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
             yield ''
 
         pdb.set_trace()
-        if not state['stream'] and question.strip():
+        if not state['stream']:
             reply = shared.model.generate(question, state)
             yield reply
         else:
