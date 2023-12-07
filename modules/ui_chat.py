@@ -25,8 +25,7 @@ def create_ui():
     shared.gradio['history'] = gr.State({'internal': [], 'visible': []})
 
     
-    with gr.Tab('Chat', elem_id='chat-tab'):
-    # with gr.Tab('Chat', elem_id='chat-tab', elem_classes=("old-ui" if shared.args.chat_buttons else None)):
+    with gr.Tab('Chat', elem_id='chat-tab', elem_classes=("old-ui" if shared.args.chat_buttons else None)):
         with gr.Row():
             with gr.Column(scale=1):
                 with gr.Row(elem_id='audio-input-container'):
@@ -52,7 +51,7 @@ def create_ui():
                 with gr.Row():
                     shared.gradio['mode'] = gr.Radio(choices=['chat', 'chat-instruct', 'instruct'], value='chat', label='Mode', info='Defines how the chat prompt is generated. In instruct and chat-instruct modes, the instruction template selected under Parameters > Instruction template must match the current model.', elem_id='chat-mode')
                     shared.gradio['chat_style'] = gr.Dropdown(choices=utils.get_available_chat_styles(), label='Chat style', value=shared.settings['chat_style'], visible=shared.settings['mode'] != 'instruct')
-            with gr.Column(scale=2):
+            with gr.Column(scale=3):
                 with gr.Row():
                     with gr.Column(elem_id='chat-col'):
                         shared.gradio['display'] = gr.HTML(value=chat_html_wrapper({'internal': [], 'visible': []}, '', '', 'chat', 'cai-chat'))
