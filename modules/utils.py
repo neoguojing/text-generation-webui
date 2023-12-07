@@ -158,3 +158,12 @@ def image_save(image_obj,file_path="./pics/input"):
     image_obj.save(output_file)
     formatted_result = f'<img src="file/{output_file}" {style}>'
     return formatted_result,output_file
+
+def down_sampling(data,orig_sr,target_sr=16000):
+    import scipy.signal as sps
+    # Resample data
+    number_of_samples = round(len(data) * float(target_sr) / orig_sr)
+    decimated_data = sps.resample(data, number_of_samples)
+    # downsample_factor = int(orig_sr / target_sr)  # 降低到目标采样率16,000 Hz
+    # decimated_data = sps.decimate(data, downsample_factor)
+    return decimated_data

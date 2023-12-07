@@ -186,7 +186,6 @@ class TaskFactory:
                     except Exception as e:
                         print(e)
 
-
         return TaskFactory._instances[task_type]
 
     @staticmethod

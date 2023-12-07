@@ -26,7 +26,8 @@ from modules.utils import (
     replace_all,
     save_file,
     audio_save,
-    image_save
+    image_save,
+    down_sampling
 )
 
 
@@ -330,7 +331,7 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
     '''
-    if text.strip() == "":
+    if text is None or text.strip() == "":
         return
     
     # pdb.set_trace()
@@ -354,15 +355,21 @@ def audio2text_wrapper(record_audio,state, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
     '''
-    
+    import librosa
+    import numpy as np
     rate, y = record_audio
     print("sample rate:",rate)
+    
+    text = ''
+    y = y.astype(np.float64)
     print("sample shape:",y.shape)
-    text = 'hello'
+    if rate != 16000:
+        y = down_sampling(y,rate)
+    print("sample shape 16000:",y.shape)
+    fmt_result,_ = audio_save(y.astype(np.int32),16000)
+    if shared.model.__class__.__name__ in ['CustomerModel']:
+        text = shared.model.audio2text(y)
 
-    fmt_result,_ = audio_save(y,rate)
-    # if shared.model.__class__.__name__ in ['CustomerModel']:
-    #     text = shared.model.audio2text(y)
     state['history'] = {'internal': [text], 'visible': [fmt_result]}
     return text,chat_html_wrapper(state["history"], state['name1'], state['name2'], state['mode'], state['chat_style']),state['history']
 
@@ -456,7 +463,6 @@ def get_history_file_path(unique_id, character, mode):
 
 
 def save_history(history, unique_id, character, mode):
-    print("save_history history:",history)
     if shared.args.multi_user:
         return
 

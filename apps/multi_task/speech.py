@@ -167,15 +167,17 @@ class Whisper(CustomerLLM):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> str:
-        generate_speech = kwargs.pop("language","mandarin")
+        generate_speech = kwargs.pop("language","chinese")
         if isinstance(prompt, str):
             return prompt
         print(prompt.shape)
-        prompt= np.squeeze(prompt)
+
         if np.ndim(prompt) > 1:
             prompt = np.squeeze(prompt)
         print(prompt.shape)
+
         result = self.pipe(prompt)
+        print("wisper result:",result)
         return result["text"]
 
     @property
