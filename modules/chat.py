@@ -348,7 +348,7 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
     for i, history in enumerate(generate_chat_reply(text, state, regenerate, _continue, loading_message=True)):
         yield chat_html_wrapper(history, state['name1'], state['name2'], state['mode'], state['chat_style']), history
 
-def audio2text_wrapper(record_audio, state, regenerate=False, _continue=False):
+def audio2text_wrapper(record_audio, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
     '''
