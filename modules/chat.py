@@ -322,12 +322,12 @@ def character_is_loaded(state, raise_exception=False):
     else:
         return True
 
-
+import pdb
 def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
     '''
-
+    pdb.set_trace()
     if not character_is_loaded(state):
         return
 
