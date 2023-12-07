@@ -25,8 +25,8 @@ def create_ui():
     shared.gradio['history'] = gr.State({'internal': [], 'visible': []})
 
     
-
-    with gr.Tab('Chat', elem_id='chat-tab', elem_classes=("old-ui" if shared.args.chat_buttons else None)):
+    with gr.Tab('Chat', elem_id='chat-tab'):
+    # with gr.Tab('Chat', elem_id='chat-tab', elem_classes=("old-ui" if shared.args.chat_buttons else None)):
         with gr.Row():
             with gr.Column(scale=1):
                 with gr.Row(elem_id='audio-input-container'):
