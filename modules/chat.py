@@ -328,6 +328,9 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
     '''
+    if text.strip() == "":
+        return
+    
     # pdb.set_trace()
     if not character_is_loaded(state):
         return

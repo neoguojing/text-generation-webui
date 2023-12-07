@@ -248,21 +248,22 @@ def generate_cai_chat_html(history, name1, name2, style, reset_cache=False):
                   </div>
                 """
 
-        output += f"""
-              <div class="message">
-                <div class="circle-bot">
-                  {img_bot}
-                </div>
-                <div class="text">
-                  <div class="username">
-                    {name2}
+        if row[1]:
+          output += f"""
+                <div class="message">
+                  <div class="circle-bot">
+                    {img_bot}
                   </div>
-                  <div class="message-body">
-                    {row[1]}
+                  <div class="text">
+                    <div class="username">
+                      {name2}
+                    </div>
+                    <div class="message-body">
+                      {row[1]}
+                    </div>
                   </div>
                 </div>
-              </div>
-            """
+              """
 
     output += "</div></div>"
     return output
