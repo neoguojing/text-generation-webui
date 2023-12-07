@@ -389,11 +389,7 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
     try:
         if not is_chat:
             yield ''
-        pdb.set_trace()
-        if question is None or question.strip()=="":
-            return
 
-        
         if not state['stream']:
             reply = shared.model.generate(question, state)
             yield reply
@@ -404,8 +400,8 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
     except Exception:
         traceback.print_exc()
     finally:
-        t1 = time.time()
-        original_tokens = len(encode(original_question)[0])
-        new_tokens = len(encode(original_question + reply)[0]) - original_tokens
-        print(f'Output generated in {(t1-t0):.2f} seconds ({new_tokens/(t1-t0):.2f} tokens/s, {new_tokens} tokens, context {original_tokens}, seed {seed})')
-        return
+        if original_question.strip():
+            t1 = time.time()
+            original_tokens = len(encode(original_question)[0])
+            new_tokens = len(encode(original_question + reply)[0]) - original_tokens
+            print(f'Output generated in {(t1-t0):.2f} seconds ({new_tokens/(t1-t0):.2f} tokens/s, {new_tokens} tokens, context {original_tokens}, seed {seed})')
