@@ -389,6 +389,10 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
     try:
         if not is_chat:
             yield ''
+        
+        if question is None or question.strip()=="":
+            yield ''
+
         pdb.set_trace()
         if not state['stream'] and question.strip():
             reply = shared.model.generate(question, state)
