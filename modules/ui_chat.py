@@ -68,7 +68,7 @@ def create_ui():
                 
         with gr.Row(elem_id="multimedia-input-row"):
                 with gr.Column(elem_id='audio-input-container'):
-                    shared.gradio['audio'] = gr.Audio(source="microphone",elem_id='audio-input',type)
+                    shared.gradio['audio'] = gr.Audio(source="microphone",elem_id='audio-input')
                 with gr.Column(elem_id='image-input-container'):
                     shared.gradio['image'] = gr.Image(type="pil",height=70,elem_id='image-input')
 
