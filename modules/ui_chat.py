@@ -10,7 +10,7 @@ from modules.html_generator import chat_html_wrapper
 from modules.text_generation import stop_everything_event
 from modules.utils import gradio
 
-inputs = ('Chat input','Audio input','Image input' 'interface_state')
+inputs = ('Chat input','Audio input','Image input', 'interface_state')
 reload_arr = ('history', 'name1', 'name2', 'mode', 'chat_style')
 clear_arr = ('delete_chat-confirm', 'delete_chat', 'delete_chat-cancel')
 
