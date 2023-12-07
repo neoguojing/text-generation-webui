@@ -389,7 +389,7 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
         if not is_chat:
             yield ''
 
-        if not state['stream'] and question:
+        if not state['stream'] and question.strip():
             reply = shared.model.generate(question, state)
             yield reply
         else:
