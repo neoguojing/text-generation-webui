@@ -362,7 +362,7 @@ def audio2text_wrapper(record_audio, regenerate=False, _continue=False):
     # if shared.model.__class__.__name__ in ['CustomerModel']:
     #     text = shared.model.audio2text(y)
 
-    return text,fmt_result
+    return text,fmt_result,text
 
 def remove_last_message(history):
     if len(history['visible']) > 0 and history['internal'][-1][0] != '<|BEGIN-VISIBLE-CHAT|>':
