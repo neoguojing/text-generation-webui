@@ -242,7 +242,8 @@ def chatbot_wrapper(text, state, regenerate=False, _continue=False, loading_mess
     prompt = apply_extensions('custom_generate_chat_prompt', text, state, **kwargs)
     if prompt is None and shared.model_name !="langchain":
         prompt = generate_chat_prompt(text, state, **kwargs)
-
+    else:
+        prompt = text
     # Generate
     reply = None
     for j, reply in enumerate(generate_reply(prompt, state, stopping_strings=stopping_strings, is_chat=True)):
