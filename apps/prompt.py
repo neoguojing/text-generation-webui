@@ -103,6 +103,7 @@ These were previous tasks you completed:
 
 Begin!
 
+{history}
 Question: {input}
 {agent_scratchpad}"""
 

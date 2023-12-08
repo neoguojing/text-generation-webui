@@ -388,7 +388,7 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
     history = [tuple(sub_list) for sub_list in history]
 
     generate_params['history'] = history
-    generate_params['system'] = state['system_message']
+    # generate_params['system'] = state['system_message']
 
     t0 = time.time()
     reply = ''
