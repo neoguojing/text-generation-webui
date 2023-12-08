@@ -185,6 +185,17 @@ class Whisper(CustomerLLM):
         """Get the identifying parameters."""
         return {"model_path": self.model_path}
 
+    def load(self,file_path: str):
+        import numpy as np
+        sample_rate, audio_data = wavfile.read(file_path)
+        print("sample_rate:",sample_rate)
+        print("audio_data:",audio_data.shape)
+        print(audio_data)
+        if np.issubdtype(audio_data.dtype, np.integer):
+            audio_data = audio_data.astype(np.float32) / np.iinfo(audio_data.dtype).max
+            print("audio_data:",audio_data)
+        return sample_rate,audio_data
+
 from TTS.tts.configs.xtts_config import XttsConfig
 from TTS.tts.models.xtts import Xtts
 config = XttsConfig()
@@ -260,4 +271,6 @@ class XTTS(CustomerLLM):
     
 # if __name__ == '__main__':
 #     sd = Whisper()
-#     sd.predict("Hello, my dog is cute")
+#     # _,data = sd.load("../../audio/input/2023_12_08/20231207214657.wav")
+#     _, data = sd.load("../../audio/input/2023_12_08/1702041799.wav")
+#     sd._call(data)
