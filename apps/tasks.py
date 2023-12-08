@@ -87,6 +87,7 @@ tools = [
 ]
 
 class Agent(Task):
+    
     def __init__(self):
         prompt = QwenAgentPromptTemplate(
             tools=tools,
@@ -94,7 +95,9 @@ class Agent(Task):
             # This includes the `intermediate_steps` variable because that is needed
             input_variables=["input", "intermediate_steps"]
         )
-
+        from langchain.memory import ConversationBufferMemory
+        self.memory = ConversationBufferMemory(memory_key="chat_history")
+        
         output_parser = QwenAgentOutputParser()
         llm_chain = LLMChain(llm=self.excurtor[0], prompt=prompt)
 
@@ -106,7 +109,7 @@ class Agent(Task):
             allowed_tools=tool_names
         )
 
-        self._executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
+        self._executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True,memory=self.memory)
 
     @function_stats
     def run(self,input: Any=None,**kwargs):
@@ -116,7 +119,7 @@ class Agent(Task):
         return output
     
     async def arun(self,input: Any=None,**kwargs):
-        return self.run(input,**kwargs)
+        return self.run(input=input,**kwargs)
     
     def init_model(self):
         model = ModelFactory.get_model("qwen")
