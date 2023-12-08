@@ -109,14 +109,14 @@ class Agent(Task):
         self._executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
 
     @function_stats
-    def run(self,input: Any=None):
+    def run(self,input: Any=None,**kwargs):
         if input is None or input == "":
             return ""
-        output = self._executor.run(input)
+        output = self._executor.run(input,**kwargs)
         return output
     
-    async def arun(self,input: Any=None):
-        return self.run(input)
+    async def arun(self,input: Any=None,**kwargs):
+        return self.run(input,**kwargs)
     
     def init_model(self):
         model = ModelFactory.get_model("qwen")
