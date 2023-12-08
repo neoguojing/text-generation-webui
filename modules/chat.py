@@ -353,11 +353,13 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
         send_dummy_reply(state['start_with'], state)
 
     # if last input is a image then do image to image task
-    prev_question = state['history'] ['internal'][-1][0] 
-    prev_answer = state['history'] ['internal'][-1][0] 
-    if prev_answer == '' and (os.path.isabs(prev_question) or os.path.exists(prev_question)):
-        if is_image_path(prev_question):
-            text = f'image:{prev_question},instruction:{text}'
+    if len(state['history']['internal']) > 0:
+        print(state['history'])
+        prev_question = state['history']['internal'][-1][0] 
+        prev_answer = state['history']['internal'][-1][0] 
+        if prev_answer == '' and (os.path.isabs(prev_question) or os.path.exists(prev_question)):
+            if is_image_path(prev_question):
+                text = f'image:{prev_question},instruction:{text}'
 
     for i, history in enumerate(generate_chat_reply(text, state, regenerate, _continue, loading_message=True)):
         print("generate_chat_reply_wrapper history:",history)
@@ -371,14 +373,14 @@ def audio2text_wrapper(record_audio,state, regenerate=False, _continue=False):
     rate, y = record_audio
     print("sample rate:",rate)
     
-    text = 'hello'
+    text = ''
     print("sample shape:",y.shape)
     if rate != 16000:
         y = down_sampling(y,rate)
     print("sample shape 16000:",y.shape)
     fmt_result,_ = audio_save(y.astype(np.int32),16000)
-    # if shared.model.__class__.__name__ in ['CustomerModel']:
-    #     text = shared.model.audio2text(y.astype(np.float64))
+    if shared.model.__class__.__name__ in ['CustomerModel']:
+        text = shared.model.audio2text(y.astype(np.float64))
     history = state['history']
     history['visible'].append([fmt_result, ''])
     history['internal'].append([text, ''])
