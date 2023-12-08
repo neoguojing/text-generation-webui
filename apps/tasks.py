@@ -93,7 +93,7 @@ class Agent(Task):
             tools=tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because that is needed
-            input_variables=["input", "intermediate_steps"]
+            input_variables=["input", "intermediate_steps",'history']
         )
         from langchain.memory import ConversationBufferMemory
         self.memory = ConversationBufferMemory(memory_key="chat_history")
