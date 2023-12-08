@@ -384,10 +384,10 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
     """
     seed = set_manual_seed(state['seed'])
     generate_params = {}
-    history =  state['history']['internal']
-    history = [tuple(sub_list) for sub_list in history]
+    # history =  state['history']['internal']
+    # history = [tuple(sub_list) for sub_list in history]
 
-    generate_params['history'] = history
+    # generate_params['history'] = history
     # generate_params['system'] = state['system_message']
 
     t0 = time.time()

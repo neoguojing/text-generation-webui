@@ -96,7 +96,7 @@ class Agent(Task):
             input_variables=["input", "intermediate_steps",'history']
         )
         from langchain.memory import ConversationBufferMemory
-        self.memory = ConversationBufferMemory(memory_key="chat_history")
+        self.memory = ConversationBufferMemory(memory_key="history")
         
         output_parser = QwenAgentOutputParser()
         llm_chain = LLMChain(llm=self.excurtor[0], prompt=prompt)
