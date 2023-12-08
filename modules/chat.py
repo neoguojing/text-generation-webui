@@ -355,23 +355,24 @@ def audio2text_wrapper(record_audio,state, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
     '''
-    import librosa
     import numpy as np
     rate, y = record_audio
     print("sample rate:",rate)
     
-    text = ''
-    y = y.astype(np.float64)
+    text = 'hello'
     print("sample shape:",y.shape)
     if rate != 16000:
         y = down_sampling(y,rate)
     print("sample shape 16000:",y.shape)
     fmt_result,_ = audio_save(y.astype(np.int32),16000)
-    if shared.model.__class__.__name__ in ['CustomerModel']:
-        text = shared.model.audio2text(y)
-
-    state['history'] = {'internal': [text], 'visible': [fmt_result]}
-    return text,chat_html_wrapper(state["history"], state['name1'], state['name2'], state['mode'], state['chat_style']),state['history']
+    # if shared.model.__class__.__name__ in ['CustomerModel']:
+    #     text = shared.model.audio2text(y.astype(np.float64))
+    pdb.set_trace()
+    history = state['history']
+    history['visible'].append([fmt_result, ''])
+    history['internal'].append([text, ''])
+    display = chat_html_wrapper(history, state['name1'], state['name2'], state['mode'], state['chat_style'])
+    return text,display,history
 
 def image_input_wrapper(image_obj,state, regenerate=False, _continue=False):
     '''
@@ -379,8 +380,11 @@ def image_input_wrapper(image_obj,state, regenerate=False, _continue=False):
     '''
     
     fmt_result,_ = image_save(image_obj)
-    state['history'] = {'internal': [fmt_result], 'visible': [fmt_result]}
-    return chat_html_wrapper(state["history"], state['name1'], state['name2'], state['mode'], state['chat_style']),state['history']
+    history = state['history']
+    history['visible'].append([fmt_result, ''])
+    history['internal'].append([fmt_result, ''])
+    display = chat_html_wrapper(state["history"], state['name1'], state['name2'], state['mode'], state['chat_style'])
+    return display,history
 
 
 def remove_last_message(history):
