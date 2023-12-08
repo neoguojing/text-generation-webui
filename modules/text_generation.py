@@ -383,7 +383,10 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
     For models that do not use the transformers library for sampling
     """
     seed = set_manual_seed(state['seed'])
-    
+
+    history =  state['history']['internal']
+    history = [tuple(sub_list) for sub_list in history]
+    system= state['system_message']
     t0 = time.time()
     reply = ''
     try:
@@ -391,10 +394,10 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
             yield ''
 
         if not state['stream']:
-            reply = shared.model.generate(question, state)
+            reply = shared.model.generate(question, state,history=history,system=system)
             yield reply
         else:
-            for reply in shared.model.generate_with_streaming(question, state):
+            for reply in shared.model.generate_with_streaming(question, state,history=history,system=system):
                 yield reply
 
     except Exception:

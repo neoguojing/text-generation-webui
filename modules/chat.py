@@ -367,7 +367,6 @@ def audio2text_wrapper(record_audio,state, regenerate=False, _continue=False):
     fmt_result,_ = audio_save(y.astype(np.int32),16000)
     # if shared.model.__class__.__name__ in ['CustomerModel']:
     #     text = shared.model.audio2text(y.astype(np.float64))
-    pdb.set_trace()
     history = state['history']
     history['visible'].append([fmt_result, ''])
     history['internal'].append([text, ''])
@@ -379,10 +378,10 @@ def image_input_wrapper(image_obj,state, regenerate=False, _continue=False):
     Same as above but returns HTML for the UI
     '''
     
-    fmt_result,_ = image_save(image_obj)
+    fmt_result,file_path = image_save(image_obj)
     history = state['history']
     history['visible'].append([fmt_result, ''])
-    history['internal'].append([fmt_result, ''])
+    history['internal'].append([file_path, ''])
     display = chat_html_wrapper(state["history"], state['name1'], state['name2'], state['mode'], state['chat_style'])
     return display,history
 

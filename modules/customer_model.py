@@ -32,17 +32,17 @@ class CustomerModel:
         string = self.agent.decode(ids)
         return string
     
-    def generate(self, prompt, state, callback=None):
+    def generate(self, prompt, state, callback=None,**kwargs):
         prompt = prompt if type(prompt) is str else prompt.decode()
         output = None
         if isinstance(prompt,str):
             print("--------input:",prompt)
-            output = self.agent.run(prompt)
+            output = self.agent.run(prompt,**kwargs)
             print("--------output:",output)
         else:
-            text_output = self.speech.run(prompt)
-            analyse_output = self.agent.run(text_output)
-            audio_output = self.speech.run(analyse_output)
+            text_output = self.speech.run(prompt,**kwargs)
+            analyse_output = self.agent.run(text_output,**kwargs)
+            audio_output = self.speech.run(analyse_output,**kwargs)
             output = audio_output
         return output
     
