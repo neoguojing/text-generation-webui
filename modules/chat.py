@@ -1,4 +1,5 @@
 import base64
+import os
 import copy
 import functools
 import html
@@ -326,6 +327,10 @@ def character_is_loaded(state, raise_exception=False):
     else:
         return True
 
+def is_image_path(path):
+    image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
+    extension = os.path.splitext(path)[-1].lower()
+    return extension in image_extensions
 import pdb
 def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
     '''
@@ -346,6 +351,13 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
         _continue = True
         send_dummy_message(text, state)
         send_dummy_reply(state['start_with'], state)
+
+    # if last input is a image then do image to image task
+    prev_question = state['history'] ['internal'][-1][0] 
+    prev_answer = state['history'] ['internal'][-1][0] 
+    if prev_answer == '' and (os.path.isabs(prev_question) or os.path.exists(prev_question)):
+        if is_image_path(prev_question):
+            text = f'image:{prev_question},instruction:{text}'
 
     for i, history in enumerate(generate_chat_reply(text, state, regenerate, _continue, loading_message=True)):
         print("generate_chat_reply_wrapper history:",history)
