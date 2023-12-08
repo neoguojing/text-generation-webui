@@ -144,11 +144,8 @@ def audio_save(audio_data,sample_rate,file_path="./audio/input"):
         audio_data = audio_data.astype(np.float32) / np.iinfo(audio_data.dtype).max
         
     wavfile.write(output_file,rate=sample_rate, data=audio_data)
-    audio_source = f"file/{output_file}"
 
-    formatted_result = '<audio controls">'
-    formatted_result += f'<source src="{audio_source}" type="audio/wav">'
-    formatted_result += f'<source src="{audio_source}" type="audio/mp3">'
+    formatted_result = f'<audio controls src="file/{output_file}">'
     formatted_result += 'Your browser does not support the audio element.'
     formatted_result += '</audio>'
     return formatted_result,output_file
