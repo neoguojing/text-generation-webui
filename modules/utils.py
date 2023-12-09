@@ -139,9 +139,6 @@ def audio_save(audio_data,sample_rate,file_path="./audio/input"):
     file = f'{date.today().strftime("%Y_%m_%d")}/{int(time.time())}'  # noqa: E501
     output_file = Path(f"{file_path}/{file}.wav")
     output_file.parent.mkdir(parents=True, exist_ok=True)
-
-    if np.issubdtype(audio_data.dtype, np.integer):
-        audio_data = audio_data.astype(np.float32) / np.iinfo(audio_data.dtype).max
         
     wavfile.write(output_file,rate=sample_rate, data=audio_data)
 
