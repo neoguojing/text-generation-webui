@@ -72,7 +72,6 @@ async def garbage_collection():
 async def main():
     # 并发运行多个异步任务
     await asyncio.gather(
-        message_bus(),
         garbage_collection()
         )
 

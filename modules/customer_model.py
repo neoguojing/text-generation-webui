@@ -8,6 +8,9 @@ class CustomerModel:
         self.agent = TaskFactory.create_task(TASK_AGENT)
         self.speech = TaskFactory.create_task(TASK_SPEECH)
 
+        self.loop = AsyncioThread()
+        self.loop.start()
+        
     @classmethod
     def from_pretrained(cls, path):
         result = cls()
