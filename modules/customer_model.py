@@ -2,15 +2,16 @@ from modules import shared
 from modules.callbacks import Iteratorize
 from modules.logging_colors import logger
 from apps.main import AsyncioThread,input,terminator_output,to_agent,to_speech
-from apps.tasks import TaskFactory,TASK_AGENT,TASK_SPEECH
+from apps.tasks import TaskFactory,TASK_AGENT,TASK_SPEECH,TASK_IMAGE_GEN
 class CustomerModel:
     def __init__(self):
         self.agent = TaskFactory.create_task(TASK_AGENT)
         self.speech = TaskFactory.create_task(TASK_SPEECH)
+        self.image_gen = TaskFactory.create_task(TASK_IMAGE_GEN)
 
         self.loop = AsyncioThread()
         self.loop.start()
-        
+
     @classmethod
     def from_pretrained(cls, path):
         result = cls()
@@ -37,7 +38,25 @@ class CustomerModel:
     def generate(self, prompt, state, callback=None,**kwargs):
         prompt = prompt if type(prompt) is str else prompt.decode()
         output = None
-        if isinstance(prompt,str):
+
+        history = state['history']['internal']
+        print("-----------",history)
+        
+        # if last input is a image then do image to image task
+        if isinstance(prompt,str) and len(history) > 0 and \
+            (history[-1][1] is None or history[-1][1] == "") and \
+            (self.is_pil_image(history[-1][0]) or self.is_image_path(history[-1][0])):
+            image_path = ""
+            image_obj = None
+            prev_question = history[-1][0] 
+            print("------------",type(prev_question))
+            if isinstance(prev_question,str):
+                image_path = prev_question
+            else:
+                image_obj = prev_question
+            output = self.image_gen.run(prompt,image_path=image_path,image_obj=image_obj)
+
+        elif isinstance(prompt,str):
             print("--------input:",prompt)
             output = self.agent.run(prompt,**kwargs)
             print("--------output:",output)
@@ -45,11 +64,11 @@ class CustomerModel:
             if state['speech_output']:
                 output = self.text2audio(output)
 
-        else:
-            text_output = self.speech.run(prompt,**kwargs)
-            analyse_output = self.agent.run(text_output,**kwargs)
-            audio_output = self.speech.run(analyse_output,**kwargs)
-            output = audio_output
+        # else:
+        #     text_output = self.speech.run(prompt,**kwargs)
+        #     analyse_output = self.agent.run(text_output,**kwargs)
+        #     audio_output = self.speech.run(analyse_output,**kwargs)
+        #     output = audio_output
         return output
     
     def audio2text(self, audio_data):
@@ -66,3 +85,19 @@ class CustomerModel:
             for token in generator:
                 reply += token
                 yield reply
+
+    def is_image_path(self,path):
+        import os
+        if not isinstance(path,str):
+            return False
+        
+        if not os.path.isabs(path) or not os.path.exists(path):
+            return False
+
+        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
+        extension = os.path.splitext(path)[-1].lower()
+        return extension in image_extensions
+
+    def is_pil_image(self,obj):
+        from PIL import Image
+        return isinstance(obj, Image.Image)

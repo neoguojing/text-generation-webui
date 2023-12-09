@@ -133,7 +133,22 @@ class ImageGenTask(Task):
 
     def init_model(self):
         model = ModelFactory.get_model("text2image")
-        return [model]
+        model1 = ModelFactory.get_model("image2image")
+        return [model,model1]
+    
+    @function_stats
+    def run(self,input:Any,**kwargs):
+        if input is None:
+            return ""
+        image_path = kwargs.pop("image_path","")
+        image_obj = kwargs.pop("image_obj",None)
+
+        if image_path != "" or image_obj is not None:
+            output = self.excurtor[1]._call(input,image_path=image_path,image_obj=image_obj)
+        else:
+            output = self.excurtor[0]._call(input,**kwargs)
+        
+        return output
 
 class Speech(Task):
     def init_model(self):
