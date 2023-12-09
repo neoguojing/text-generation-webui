@@ -32,6 +32,9 @@ def create_ui():
                     with gr.Group():
                         shared.gradio['audio'] = gr.Audio(source="microphone",elem_id='audio-input',label='Speech input')
                         shared.gradio['speech_output'] = gr.Checkbox(value=shared.settings['speech_output'], label='Speech output', elem_id='speech-output')
+                        shared.gradio['tone_record'] = gr.Audio(source="microphone",elem_id='tone-record',label='Tone record')
+                        shared.gradio['tone_upload'] = gr.Audio(source="upload",elem_id='tone-upload',label='Tone upload')
+                        
                 with gr.Row(elem_id='image-container'):
                     shared.gradio['image'] = gr.Image(type="pil",elem_id='image-input',label='Image input')
                 
