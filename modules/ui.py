@@ -164,6 +164,7 @@ def list_interface_input_elements():
         'chat_style',
         'chat-instruct_command',
         'audio',
+        'speech_output',
         'image',
     ]
 

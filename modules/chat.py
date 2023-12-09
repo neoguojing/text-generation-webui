@@ -375,19 +375,21 @@ def audio2text_wrapper(record_audio,state, regenerate=False, _continue=False):
     
     text = ''
     print("sample shape:",y.shape)
-    print("sample shape 16000:",y)
 
-    fmt_result,_ = audio_save(y,rate)
-
+    # fmt_result,_ = audio_save(y,rate)
+    target_audio = None
     if np.issubdtype(y.dtype, np.integer):
-        y = y.astype(np.float32) / np.iinfo(y.dtype).max
+        target_audio = y.astype(np.float32) / np.iinfo(y.dtype).max
 
     if rate != 16000:
-        y = down_sampling(y,rate)
-    print("sample shape 16000:",y)
-    if shared.model.__class__.__name__ in ['CustomerModel']:
-        text = shared.model.audio2text(y)
+        target_audio = down_sampling(target_audio,rate)
 
+    print("sample shape:",rate,y)
+    print("sample shape 16000:",target_audio)
+    if shared.model.__class__.__name__ in ['CustomerModel']:
+        text = shared.model.audio2text(target_audio)
+
+    fmt_result,_ = audio_save(y,rate,text=text)
     history = state['history']
     history['visible'].append([fmt_result, ''])
     history['internal'].append([text, ''])

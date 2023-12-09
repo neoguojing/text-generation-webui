@@ -204,7 +204,7 @@ class XTTS(CustomerLLM):
     
     model_path: str = Field(None, alias='model_path')
     processor: Any = None
-    file_path: str = "./audios"
+    file_path: str = "./audio/output"
     sample_rate: Any = 24000
     save_to_file: bool = True
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
@@ -238,9 +238,9 @@ class XTTS(CustomerLLM):
             gpt_cond_len=3,
             language=generate_speech,
         )
-        return self.handle_output(outputs)
+        return self.handle_output(outputs["wav"],prompt=prompt)
         # print(outputs["wav"])
-    def handle_output(self,audio_data):
+    def handle_output(self,audio_data,prompt=""):
         if self.save_to_file:
             file = f'{date.today().strftime("%Y_%m_%d")}/{int(time.time())}'  # noqa: E501
             output_file = Path(f"{self.file_path}/{file}.wav")
@@ -257,11 +257,11 @@ class XTTS(CustomerLLM):
             audio_base64 = base64.b64encode(audio_file.read()).decode('utf-8')
             audio_source = "data:audio/wav;base64," + audio_base64
 
-        formatted_result = '<audio controls autoplay="autoplay">'
-        formatted_result += f'<source src="{audio_source}" type="audio/wav">'
-        formatted_result += f'<source src="{audio_source}" type="audio/mp3">'
+        formatted_result = f'<audio controls src="{audio_source}">'
         formatted_result += 'Your browser does not support the audio element.'
-        formatted_result += '</audio>\n'
+        formatted_result += '</audio>'
+        if prompt != "":
+            formatted_result += f'\n<p>{prompt}</p>'
         return formatted_result
     
     @property

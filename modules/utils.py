@@ -134,7 +134,7 @@ def get_available_grammars():
 from datetime import date
 from scipy.io import wavfile
 import time
-def audio_save(audio_data,sample_rate,file_path="./audio/input"):
+def audio_save(audio_data,sample_rate,text="",file_path="./audio/input"):
     import numpy as np
     file = f'{date.today().strftime("%Y_%m_%d")}/{int(time.time())}'  # noqa: E501
     output_file = Path(f"{file_path}/{file}.wav")
@@ -145,6 +145,8 @@ def audio_save(audio_data,sample_rate,file_path="./audio/input"):
     formatted_result = f'<audio controls src="file/{output_file}">'
     formatted_result += 'Your browser does not support the audio element.'
     formatted_result += '</audio>'
+    if text != "":
+        formatted_result += f'\n<p>{text}</p>'
     return formatted_result,output_file
 
 def image_save(image_obj,file_path="./pics/input"):

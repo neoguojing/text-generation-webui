@@ -2,7 +2,6 @@ from modules import shared
 from modules.callbacks import Iteratorize
 from modules.logging_colors import logger
 from apps.main import AsyncioThread,input,terminator_output,to_agent,to_speech
-
 from apps.tasks import TaskFactory,TASK_AGENT,TASK_SPEECH
 class CustomerModel:
     def __init__(self):
@@ -39,6 +38,10 @@ class CustomerModel:
             print("--------input:",prompt)
             output = self.agent.run(prompt,**kwargs)
             print("--------output:",output)
+            print("--------------",state['speech_output'])
+            if state['speech_output']:
+                output = self.text2audio(output)
+
         else:
             text_output = self.speech.run(prompt,**kwargs)
             analyse_output = self.agent.run(text_output,**kwargs)

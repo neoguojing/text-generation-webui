@@ -28,10 +28,12 @@ def create_ui():
     with gr.Tab('Chat', elem_id='chat-tab', elem_classes=("old-ui" if shared.args.chat_buttons else None)):
         with gr.Row():
             with gr.Column(scale=1):
-                with gr.Row(elem_id='audio-input-container'):
-                    shared.gradio['audio'] = gr.Audio(source="microphone",elem_id='audio-input')
-                with gr.Row(elem_id='image-input-container'):
-                    shared.gradio['image'] = gr.Image(type="pil",elem_id='image-input')
+                with gr.Row(elem_id='audio-container'):
+                    with gr.Group():
+                        shared.gradio['audio'] = gr.Audio(source="microphone",elem_id='audio-input',label='Speech input')
+                        shared.gradio['speech_output'] = gr.Checkbox(value=shared.settings['speech_output'], label='Speech output', elem_id='speech-output')
+                with gr.Row(elem_id='image-container'):
+                    shared.gradio['image'] = gr.Image(type="pil",elem_id='image-input',label='Image input')
                 
                 with gr.Row(elem_id='past-chats-row'):
                     shared.gradio['unique_id'] = gr.Dropdown(label='Past chats', elem_classes=['slim-dropdown'], interactive=not mu)
@@ -195,6 +197,7 @@ def create_event_handlers():
         ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
         chat.save_history, gradio('history', 'unique_id', 'character_menu', 'mode'), None).then(
         lambda: None, None, None, _js=f'() => {{{ui.audio_notification_js}}}')
+    shared.gradio['speech_output'].change(ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state'))
     
     shared.gradio['image'].upload(
         ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(

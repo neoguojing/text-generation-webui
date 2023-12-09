@@ -30,6 +30,7 @@ need_restart = False
 settings = {
     'dark_theme': True,
     'show_controls': True,
+    'speech_output': False,
     'start_with': '',
     'mode': 'chat',
     'chat_style': 'cai-chat',
