@@ -175,6 +175,10 @@ class Speech(Task):
     async def arun(self,input:Any,**kwargs):
         return self.run(input,**kwargs)
     
+    def set_tone(self,path:str):
+        self.excurtor[1].set_tone(path)
+
+    
 
 class TranslateTask(Task):
     def init_model(self):

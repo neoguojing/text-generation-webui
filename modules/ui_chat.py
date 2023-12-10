@@ -56,6 +56,7 @@ def create_ui():
                 with gr.Row():
                     shared.gradio['mode'] = gr.Radio(choices=['chat', 'chat-instruct', 'instruct'], value='chat', label='Mode', info='Defines how the chat prompt is generated. In instruct and chat-instruct modes, the instruction template selected under Parameters > Instruction template must match the current model.', elem_id='chat-mode')
                     shared.gradio['chat_style'] = gr.Dropdown(choices=utils.get_available_chat_styles(), label='Chat style', value=shared.settings['chat_style'], visible=shared.settings['mode'] != 'instruct')
+            
             with gr.Column(scale=3):
                 with gr.Row():
                     with gr.Column(elem_id='chat-col'):
@@ -201,6 +202,14 @@ def create_event_handlers():
         chat.save_history, gradio('history', 'unique_id', 'character_menu', 'mode'), None).then(
         lambda: None, None, None, _js=f'() => {{{ui.audio_notification_js}}}')
     shared.gradio['speech_output'].change(ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state'))
+    shared.gradio['tone_record'].stop_recording(
+        ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
+        chat.set_tone_for_speech, gradio('tone_record','interface_state'), None, show_progress=False).then(
+        lambda: None, None, None, _js=f'() => {{{ui.audio_notification_js}}}')
+    shared.gradio['tone_upload'].upload(
+        ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
+        chat.set_tone_for_speech, gradio('tone_upload','interface_state'), None, show_progress=False).then(
+        lambda: None, None, None, _js=f'() => {{{ui.audio_notification_js}}}')
     
     shared.gradio['image'].upload(
         ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(

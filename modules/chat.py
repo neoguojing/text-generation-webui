@@ -350,7 +350,7 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
         send_dummy_reply(state['start_with'], state)
 
     for i, history in enumerate(generate_chat_reply(text, state, regenerate, _continue, loading_message=True)):
-        print("generate_chat_reply_wrapper history:",history)
+        # print("generate_chat_reply_wrapper history:",history)
         yield chat_html_wrapper(history, state['name1'], state['name2'], state['mode'], state['chat_style']), history
 
 def audio2text_wrapper(record_audio,state, regenerate=False, _continue=False):
@@ -383,6 +383,36 @@ def audio2text_wrapper(record_audio,state, regenerate=False, _continue=False):
     history['internal'].append([text, ''])
     display = chat_html_wrapper(history, state['name1'], state['name2'], state['mode'], state['chat_style'])
     return text,display,history
+
+def set_tone_for_speech(audio_data,state, regenerate=False, _continue=False):
+    '''
+    Same as above but returns HTML for the UI
+    '''
+    import numpy as np
+    rate, y = audio_data
+    print("tone sample rate:",rate)
+    
+    text = ''
+    print("tone sample shape:",y.shape)
+
+    # fmt_result,_ = audio_save(y,rate)
+    target_audio = y
+    # if np.issubdtype(y.dtype, np.integer):
+    #     target_audio = y.astype(np.float32) / np.iinfo(y.dtype).max
+
+    # if rate != 24000:
+    #     target_audio = down_sampling(target_audio,rate)
+
+    print("sample shape:",rate,y)
+    print("sample shape 24000:",target_audio)
+
+    _,tone_path = audio_save(y,rate,text=text,file_path="./audio/tone")
+    print(tone_path)
+    if shared.model.__class__.__name__ in ['CustomerModel']:
+        text = shared.model.set_tone(tone_path)
+
+    
+
 
 def image_input_wrapper(image_obj,state, regenerate=False, _continue=False):
     '''

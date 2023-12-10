@@ -165,6 +165,8 @@ def list_interface_input_elements():
         'chat-instruct_command',
         'audio',
         'speech_output',
+        'tone_record',
+        'tone_upload',
         'image',
     ]
 

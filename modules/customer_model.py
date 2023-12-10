@@ -101,3 +101,6 @@ class CustomerModel:
     def is_pil_image(self,obj):
         from PIL import Image
         return isinstance(obj, Image.Image)
+    
+    def set_tone(self,path:str):
+        self.speech.set_tone(path)

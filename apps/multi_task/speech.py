@@ -208,10 +208,12 @@ class XTTS(CustomerLLM):
     sample_rate: Any = 24000
     save_to_file: bool = True
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+    speaker_wav: str = Field(None, alias='speaker_wav')
     
     def __init__(self, model_path: str = os.path.join(model_root,"XTTS-v2"),**kwargs):
         super(XTTS, self).__init__(llm=Xtts.init_from_config(config))
         self.model_path = model_path
+        self.speaker_wav = os.path.join(self.model_path,"samples/zh-cn-sample.wav")
         self.model.load_checkpoint(config, checkpoint_dir=self.model_path, eval=True)
         self.model.cuda()
 
@@ -234,12 +236,13 @@ class XTTS(CustomerLLM):
         outputs = self.model.synthesize(
             prompt,
             config,
-            speaker_wav=os.path.join(self.model_path,"samples/zh-cn-sample.wav"),
+            speaker_wav=self.speaker_wav,
             gpt_cond_len=3,
             language=generate_speech,
         )
         return self.handle_output(outputs["wav"],prompt=prompt)
         # print(outputs["wav"])
+
     def handle_output(self,audio_data,prompt=""):
         if self.save_to_file:
             file = f'{date.today().strftime("%Y_%m_%d")}/{int(time.time())}'  # noqa: E501
@@ -264,6 +267,9 @@ class XTTS(CustomerLLM):
             formatted_result += f'\n<p>{prompt}</p>'
         return formatted_result
     
+    def set_tone(self,path:str):
+        self.speaker_wav = path
+
     @property
     def _identifying_params(self) -> Mapping[str, Any]:
         """Get the identifying parameters."""
