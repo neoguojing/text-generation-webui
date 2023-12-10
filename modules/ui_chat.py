@@ -37,6 +37,9 @@ def create_ui():
                         
                 with gr.Row(elem_id='image-container'):
                     shared.gradio['image'] = gr.Image(type="pil",elem_id='image-input',label='Image input')
+
+                with gr.Row(elem_id='file-container'):
+                    shared.gradio['file'] = gr.File(file_count="multiple", file_types=["text", ".json", ".csv",".docx",".doc",".pdf"])
                 
                 with gr.Row(elem_id='past-chats-row'):
                     shared.gradio['unique_id'] = gr.Dropdown(label='Past chats', elem_classes=['slim-dropdown'], interactive=not mu)
@@ -217,6 +220,11 @@ def create_event_handlers():
         chat.image_input_wrapper, gradio('Image input','interface_state'), gradio('display', 'history'), show_progress=False).then(
         ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
         chat.save_history, gradio('history', 'unique_id', 'character_menu', 'mode'), None).then(
+        lambda: None, None, None, _js=f'() => {{{ui.audio_notification_js}}}')
+    
+    shared.gradio['file'].upload(
+        ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
+        chat.file_handler, gradio('file','interface_state'), None, show_progress=False).then(
         lambda: None, None, None, _js=f'() => {{{ui.audio_notification_js}}}')
 
     shared.gradio['Regenerate'].click(

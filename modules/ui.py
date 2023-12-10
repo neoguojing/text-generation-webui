@@ -168,6 +168,7 @@ def list_interface_input_elements():
         'tone_record',
         'tone_upload',
         'image',
+        'file',
     ]
 
     # Notebook/default elements

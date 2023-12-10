@@ -411,9 +411,17 @@ def set_tone_for_speech(audio_data,state, regenerate=False, _continue=False):
     if shared.model.__class__.__name__ in ['CustomerModel']:
         text = shared.model.set_tone(tone_path)
 
-    
 
+def file_handler(file_objs,state, regenerate=False, _continue=False):
+    import shutil
+    print("file_obj:",type(file_objs))
 
+    # file_name = os.path.basename(file.name)
+    # file_path = os.path.join("./files/input",file_name)
+    os.makedirs(os.path.dirname("./files/input/"), exist_ok=True)
+    for idx, file in enumerate(file_objs):
+        shutil.move(file.name,"./files/input/")
+   
 def image_input_wrapper(image_obj,state, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
