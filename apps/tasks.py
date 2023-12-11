@@ -61,18 +61,18 @@ tools = [
         func=search.run,
         description="Useful for when you need to answer questions about current events"
     ),
-    Tool(
-        name="Math",
-        func=WolframAlpha.run,
-        description="Useful for when you need to answer questions about Math, Science, Technology, Culture, Society and Everyday Life."
-    ),
-    Tool(
-        name="arxiv",
-        func=arxiv.run,
-        description="A wrapper around Arxiv.org Useful for when you need to answer questions about Physics, Mathematics, Computer Science, \
-            Quantitative Biology, Quantitative Finance, Statistics, Electrical Engineering, and Economics from scientific articles \
-            on arxiv.org."
-    ),
+    # Tool(
+    #     name="Math",
+    #     func=WolframAlpha.run,
+    #     description="Useful for when you need to answer questions about Math, Science, Technology, Culture, Society and Everyday Life."
+    # ),
+    # Tool(
+    #     name="arxiv",
+    #     func=arxiv.run,
+    #     description="A wrapper around Arxiv.org Useful for when you need to answer questions about Physics, Mathematics, Computer Science, \
+    #         Quantitative Biology, Quantitative Finance, Statistics, Electrical Engineering, and Economics from scientific articles \
+    #         on arxiv.org."
+    # ),
     # Tool(
     #     name="alphaVantage",
     #     func=alpha_vantage.run,
