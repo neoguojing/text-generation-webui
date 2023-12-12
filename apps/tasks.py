@@ -34,7 +34,7 @@ TASK_SPEECH = 500
 
 os.environ['SERPAPI_API_KEY'] = 'f765e0536e1a72c2f353bb1946875937b3ac7bed0270881f966d4147ac0a7943'
 os.environ['WOLFRAM_ALPHA_APPID'] = 'QTJAQT-UPJ2R3KP89'
-os.environ["ALPHAVANTAGE_API_KEY"] = ''
+os.environ["ALPHAVANTAGE_API_KEY"] = '1JXIUYN26HYID5Y9'
 
 search = SerpAPIWrapper()
 # search = DuckDuckGoSearchRun()
@@ -54,6 +54,26 @@ def text2speech(input:str) ->str:
     """Useful for when you need to transfer text to speech or audio.Speech to speech translation.Speech to text translation.Text to speech translation.Text to text translation.Automatic speech recognition."""
     task = TaskFactory.create_task(TASK_SPEECH)
     return task.run(input)
+
+@tool("stock or trade info", return_direct=True)
+def get_stock(input:str) ->str:
+    """Useful for get one stock trade info; input must be the stock code"""
+    import requests
+    import json
+    # replace the "demo" apikey below with your own key from https://www.alphavantage.co/support/#api-key
+    url = 'https://www.alphavantage.co/query'
+    params = {
+        'function': 'TIME_SERIES_DAILY',
+        'symbol': input,
+        'apikey': '1JXIUYN26HYID5Y9'
+    }
+    print(params)
+    r = requests.get(url, params=params)
+    # data = json.dumps(data, indent=4)
+    data = r.json()
+    # data = r.json()['Time Series (Daily)']
+    # data = data[next(iter(data))]
+    return json.dumps(data, indent=4)
 
 tools = [
     Tool(
@@ -83,7 +103,7 @@ tools = [
     # ),
     image_gen,
     text2speech,
-
+    get_stock,
 ]
 
 class Agent(Task):
