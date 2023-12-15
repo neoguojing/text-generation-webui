@@ -235,10 +235,15 @@ class QwenAgentOutputParser(AgentOutputParser):
                     return_values={"output": llm_output.strip()},
                     log=llm_output,
                 )
+        print("llm_output:",llm_output)
         action = match.group(1).strip()
+        print("action:",action)
         action_input = match.group(2)
+        print("action_input:",action)
+        tool_input = action_input.strip(" ").strip('"').strip('\nObservation: ')
+        print(f"tool_input:{tool_input}----------")
         # Return the action and action input
-        return AgentAction(tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output)
+        return AgentAction(tool=action, tool_input=tool_input, log=llm_output)
 
 def parse_latest_plugin_call(text: str) -> Tuple[str, str]:
     i = text.rfind('\nAction:')
