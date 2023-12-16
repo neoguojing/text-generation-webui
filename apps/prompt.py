@@ -117,8 +117,12 @@ class QwenAgentPromptTemplate(BaseChatPromptTemplate):
         # Get the intermediate steps (AgentAction, Observation tuples)
         # Format them in a particular way
         intermediate_steps = kwargs.pop("intermediate_steps")
+
+        print("intermediate_steps:",intermediate_steps)
         thoughts = ""
         for action, observation in intermediate_steps:
+            print("action:",action)
+            print("observation:",observation)
             thoughts += action.log
             thoughts += f"\nObservation: {observation}\nThought: "
         # Set the agent_scratchpad variable to that value

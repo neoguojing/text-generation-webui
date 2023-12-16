@@ -3,7 +3,7 @@ from langchain.tools import tool
 from dataclasses import dataclass,asdict
 import requests
 import json
-from langchain.prompts import StringPromptTemplate
+from langchain.prompts import PromptTemplate
 from langdetect import detect
 @dataclass
 class StockData:
@@ -63,15 +63,13 @@ def get_stock_code(input:str):
 @tool("translate", return_direct=False)
 def translate_input(input_text):
     """Useful for translate input to English"""
-    prompt = StringPromptTemplate(
-        "Translate the following text to English:\n\nInput: {input}\n\nTranslate:"
-    )
-    return prompt.render(input=input_text)
+    template = """Translate {input} to English"""
+    prompt = PromptTemplate.from_template(template)
+    return prompt.format(input=input_text)
 
 
 def detect_language(text):
-    text = remove_digits(text)
-    print(text)
+    # text = remove_digits(text)
     lang = detect(text)
     return lang
 
@@ -80,5 +78,5 @@ def remove_digits(input_str):
     output_str = re.sub(r'\d+', '', input_str)
     return output_str
 
-if __name__ == '__main__':
-    print(detect_language("take a picture"))
+# if __name__ == '__main__':
+#     print(detect_language("take 1 picture"))

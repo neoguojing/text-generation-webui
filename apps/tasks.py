@@ -11,7 +11,7 @@ import os
 import sys
 import time
 from typing import Any
-from .tools import get_stock,translate_input
+from .tools import get_stock,translate_input,detect_language
 # 获取当前脚本所在的目录路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -92,6 +92,29 @@ tools = [
     translate_input,
 ]
 
+
+class CustomAgent(LLMSingleActionAgent):
+    def plan(self, intermediate_steps, **kwargs):
+        # Implement your custom logic here
+        # based on intermediate_steps and kwargs
+
+        # # Example logic:
+        # if intermediate_steps:
+        #     # Get the last intermediate step
+        #     last_step = intermediate_steps[-1]
+
+        #     # Check if the last step is a specific tool
+        #     if last_step[0].tool == "TranslateTool":
+        #         # Perform some action based on the translation
+        #         translated_text = last_step[1]
+        #         return AgentAction(tool="DrawPictureTool", tool_input=translated_text, log="")
+
+        # # If no specific condition is met, return AgentFinish
+        # return AgentFinish()
+        # print("****************\n",intermediate_steps,kwargs.keys())
+        return super().plan(intermediate_steps,**kwargs)
+    
+
 class Agent(Task):
     
     def __init__(self):
@@ -108,7 +131,8 @@ class Agent(Task):
         llm_chain = LLMChain(llm=self.excurtor[0], prompt=prompt)
 
         tool_names = [tool.name for tool in tools]
-        agent = LLMSingleActionAgent(
+        # agent = LLMSingleActionAgent(
+        agent = CustomAgent(
             llm_chain=llm_chain,
             output_parser=output_parser,
             stop=["\nObservation:"],

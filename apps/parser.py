@@ -216,6 +216,7 @@ import pdb
 class QwenAgentOutputParser(AgentOutputParser):
 
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
+        print("llm_output:\n",llm_output)
         # Check if agent should finish
         if "Final Answer:" in llm_output:
             return AgentFinish(
@@ -224,9 +225,11 @@ class QwenAgentOutputParser(AgentOutputParser):
                 return_values={"output": llm_output.split("Final Answer:")[-1].strip()},
                 log=llm_output,
             )
+        
         # Parse out the action and action input
         regex = r"Action\s*\d*\s*:(.*?)\nAction\s*\d*\s*Input\s*\d*\s*:[\s]*(.*)"
         match = re.search(regex, llm_output, re.DOTALL)
+
         if not match:
             # raise ValueError(f"Could not parse LLM output: `{llm_output}`")
             return AgentFinish(
@@ -241,7 +244,7 @@ class QwenAgentOutputParser(AgentOutputParser):
         action_input = match.group(2)
         # print("action_input:",action)
         tool_input = action_input.strip('\nObservation: ').strip(" ").strip('"')
-        print(f"tool_input:{tool_input}----------")
+        print(f"tool_input:{tool_input}")
         # Return the action and action input
         return AgentAction(tool=action, tool_input=tool_input, log=llm_output)
 
