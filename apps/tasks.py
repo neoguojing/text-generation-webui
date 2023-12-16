@@ -11,6 +11,7 @@ import os
 import sys
 import time
 from typing import Any
+from .tools import get_stock,translate_input
 # 获取当前脚本所在的目录路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -45,7 +46,9 @@ arxiv = ArxivAPIWrapper()
 
 @tool("image generate", return_direct=True)
 def image_gen(input:str) ->str:
-    """Useful for when you need to generate or draw a picture by input text.Text to image diffusion model capable of generating photo-realistic images given any text input."""
+    """Useful for when you need to generate or draw a picture by input text.
+    The input text must be English,if not please do translate.
+    Text to image diffusion model capable of generating photo-realistic images given any text input."""
     task = TaskFactory.create_task(TASK_IMAGE_GEN)
     return task.run(input)
 
@@ -55,25 +58,7 @@ def text2speech(input:str) ->str:
     task = TaskFactory.create_task(TASK_SPEECH)
     return task.run(input)
 
-@tool("stock or trade info", return_direct=True)
-def get_stock(input:str) ->str:
-    """Useful for get one stock trade info; input must be the stock code"""
-    import requests
-    import json
-    # replace the "demo" apikey below with your own key from https://www.alphavantage.co/support/#api-key
-    url = 'https://www.alphavantage.co/query'
-    params = {
-        'function': 'TIME_SERIES_DAILY',
-        'symbol': input,
-        'apikey': '1JXIUYN26HYID5Y9'
-    }
-    print(params)
-    r = requests.get(url, params=params)
-    # data = json.dumps(data, indent=4)
-    data = r.json()
-    # data = r.json()['Time Series (Daily)']
-    # data = data[next(iter(data))]
-    return json.dumps(data, indent=4)
+
 
 tools = [
     Tool(
@@ -104,6 +89,7 @@ tools = [
     image_gen,
     text2speech,
     get_stock,
+    translate_input,
 ]
 
 class Agent(Task):
@@ -126,7 +112,8 @@ class Agent(Task):
             llm_chain=llm_chain,
             output_parser=output_parser,
             stop=["\nObservation:"],
-            allowed_tools=tool_names
+            allowed_tools=tool_names,
+            max_iterations=5,
         )
 
         self._executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True,memory=self.memory)
