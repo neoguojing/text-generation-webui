@@ -11,7 +11,7 @@ import os
 import sys
 import time
 from typing import Any
-from .tools import get_stock,translate_input,detect_language
+from .tools import get_stock
 # 获取当前脚本所在的目录路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -23,7 +23,7 @@ sys.path.insert(0, top_package_path)
 import threading
 from apps.base import Task,function_stats
 from apps.model_factory import ModelFactory
-from apps.prompt import QwenAgentPromptTemplate
+from apps.prompt import QwenAgentPromptTemplate,translate_prompt
 from apps.parser import QwenAgentOutputParser
 
 TASK_AGENT = 100
@@ -31,6 +31,7 @@ TASK_TRANSLATE = 200
 TASK_DATA_HANDLER = 300
 TASK_IMAGE_GEN = 400
 TASK_SPEECH = 500
+TASK_GENERAL = 600
 
 
 os.environ['SERPAPI_API_KEY'] = 'f765e0536e1a72c2f353bb1946875937b3ac7bed0270881f966d4147ac0a7943'
@@ -47,7 +48,6 @@ arxiv = ArxivAPIWrapper()
 @tool("image generate", return_direct=True)
 def image_gen(input:str) ->str:
     """Useful for when you need to generate or draw a picture by input text.
-    The input text must be English,if not please do translate.
     Text to image diffusion model capable of generating photo-realistic images given any text input."""
     task = TaskFactory.create_task(TASK_IMAGE_GEN)
     return task.run(input)
@@ -89,7 +89,6 @@ tools = [
     image_gen,
     text2speech,
     get_stock,
-    translate_input,
 ]
 
 
@@ -113,7 +112,6 @@ class CustomAgent(LLMSingleActionAgent):
         # return AgentFinish()
         # print("****************\n",intermediate_steps,kwargs.keys())
         return super().plan(intermediate_steps,**kwargs)
-    
 
 class Agent(Task):
     
@@ -158,8 +156,13 @@ class Agent(Task):
     
     def destroy(self):
         print("Agent model should not be destroy ")
-    
 
+class General(Task):
+    def init_model(self):
+        model = ModelFactory.get_model("qwen")
+        return [model]   
+
+import pdb
 class ImageGenTask(Task):
 
     def init_model(self):
@@ -174,6 +177,9 @@ class ImageGenTask(Task):
         image_path = kwargs.pop("image_path","")
         image_obj = kwargs.pop("image_obj",None)
 
+        translate = ModelFactory.get_model("qwen")
+        en_prompt = translate_prompt(input)
+        input = translate.predict(en_prompt)
         if image_path != "" or image_obj is not None:
             output = self.excurtor[1]._call(input,image_path=image_path,image_obj=image_obj)
         else:
@@ -234,6 +240,8 @@ class TaskFactory:
                             instance = ImageGenTask()
                         elif task_type == TASK_SPEECH:
                             instance = Speech()
+                        elif task_type == TASK_SPEECH:
+                            instance = General()
 
                         TaskFactory._instances[task_type] = instance
                     except Exception as e:

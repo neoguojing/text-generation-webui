@@ -133,3 +133,13 @@ class QwenAgentPromptTemplate(BaseChatPromptTemplate):
         kwargs["tool_names"] = ", ".join([tool.name for tool in self.tools])
         formatted = self.template.format(**kwargs)
         return [HumanMessage(content=formatted)]
+    
+def translate_prompt(input_text):
+    template = """Translate {input} to English"""
+    prompt = PromptTemplate.from_template(template)
+    return prompt.format(input=input_text)
+
+def stock_code_prompt(input_text):
+    template = """Stock Symbol or Ticker Symbol of {input}"""
+    prompt = PromptTemplate.from_template(template)
+    return prompt.format(input=input_text)

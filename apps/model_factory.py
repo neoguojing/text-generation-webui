@@ -104,9 +104,8 @@ class QwenLLM(CustomerLLM):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> str:
-        if stop is None:
+        if stop is not None:
             self.react_stop_words_tokens.extend([self.tokenizer.encode(stop_) for stop_ in stop])
-        
         
         # system = kwargs.pop('system', '')
         history = kwargs.pop('history', [])

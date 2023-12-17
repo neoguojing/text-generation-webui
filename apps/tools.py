@@ -3,8 +3,9 @@ from langchain.tools import tool
 from dataclasses import dataclass,asdict
 import requests
 import json
-from langchain.prompts import PromptTemplate
-from langdetect import detect
+from model_factory import ModelFactory
+from prompt import stock_code_prompt
+
 @dataclass
 class StockData:
     open: str
@@ -15,7 +16,13 @@ class StockData:
 
 @tool("stock or trade info", return_direct=False)
 def get_stock(input:str,topk=5) ->str:
-    """Useful for get one stock trade info; input must be the stock code"""
+    # """Useful for get one stock trade info; input must be the stock code"""
+    """Useful for takeing the stock symbol or ticker as input and retrieves relevant trading data for that stock"""
+
+    translate = ModelFactory.get_model("qwen")
+    stock_code = stock_code_prompt(input)
+    llm_out = translate.predict(stock_code)
+    input = parse_stock_code(llm_out)
     
     # replace the "demo" apikey below with your own key from https://www.alphavantage.co/support/#api-key
     url = 'https://www.alphavantage.co/query'
@@ -28,7 +35,6 @@ def get_stock(input:str,topk=5) ->str:
     r = requests.get(url, params=params)
     try:
         data = r.json()
-        print("JSON data is valid.")
     except json.JSONDecodeError:
         print("JSON data is invalid.")
         return "JSON data is invalid."
@@ -60,23 +66,15 @@ def get_stock_code(input:str):
     print(params)
     r = requests.get(url, params=params)
 
-@tool("translate", return_direct=False)
-def translate_input(input_text):
-    """Useful for translate input to English"""
-    template = """Translate {input} to English"""
-    prompt = PromptTemplate.from_template(template)
-    return prompt.format(input=input_text)
+def parse_stock_code(input:str):
+    # Split the sentence into words
+    words = input.split()
+    # Loop through the words to find the stock symbol
+    for word in words:
+        if word.isupper():
+            stock_symbol = word
+            break
+    return stock_symbol.rstrip('.')
 
-
-def detect_language(text):
-    # text = remove_digits(text)
-    lang = detect(text)
-    return lang
-
-def remove_digits(input_str):
-    import re
-    output_str = re.sub(r'\d+', '', input_str)
-    return output_str
-
-# if __name__ == '__main__':
-#     print(detect_language("take 1 picture"))
+if __name__ == '__main__':
+    print(get_stock("MSFT"))
