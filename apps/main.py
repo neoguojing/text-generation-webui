@@ -66,7 +66,7 @@ async def garbage_collection():
     while True:
         await asyncio.sleep(60)
         TaskFactory.release()
-        ModelFactory.release()
+        # ModelFactory.release()
 
 
 async def main():
