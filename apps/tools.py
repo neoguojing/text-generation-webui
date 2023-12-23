@@ -3,8 +3,8 @@ from langchain.tools import tool
 from dataclasses import dataclass,asdict
 import requests
 import json
-from model_factory import ModelFactory
-from prompt import stock_code_prompt
+from .model_factory import ModelFactory
+from .prompt import stock_code_prompt
 
 @dataclass
 class StockData:
