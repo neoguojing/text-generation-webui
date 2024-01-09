@@ -17,13 +17,13 @@ document.querySelector(".header_bar").addEventListener("click", function(event) 
     // Check if one of the generation tabs is visible
     if (chat_visible || notebook_visible || default_visible) {
       extensions.style.display = "flex";
-      // if (chat_visible) {
-      //   extensions.style.maxWidth = "880px";
-      //   extensions.style.padding = "0px";
-      // } else {
+      if (chat_visible) {
+        extensions.style.maxWidth = "880px";
+        extensions.style.padding = "0px";
+      } else {
         extensions.style.maxWidth = "none";
         extensions.style.padding = "15px";
-      // }
+      }
     } else {
       extensions.style.display = "none";
     }
