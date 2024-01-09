@@ -28,7 +28,7 @@ need_restart = False
 
 # UI defaults
 settings = {
-    'dark_theme': True,
+    'dark_theme': False,
     'show_controls': True,
     'speech_output': False,
     'start_with': '',
