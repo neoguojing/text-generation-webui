@@ -40,31 +40,38 @@ class CustomerModel:
         output = None
 
         history = state['history']['internal']
-        print("history:",history)
-        # print("state:",state['context'].strip())
-        print("state:",state)
-        
-        # if last input is a image then do image to image task
-        if isinstance(prompt,str) and len(history) > 0 and \
-            (history[-1][1] is None or history[-1][1] == "") and \
-            (self.is_pil_image(history[-1][0]) or self.is_image_path(history[-1][0])):
-            image_path = ""
-            image_obj = None
-            prev_question = history[-1][0] 
-            print("prev_question:",type(prev_question))
-            if isinstance(prev_question,str):
-                image_path = prev_question
-            else:
-                image_obj = prev_question
-            output = self.image_gen.run(prompt,image_path=image_path,image_obj=image_obj)
+        if len(history) > 5:
+            history = history[-5:]
 
-        elif isinstance(prompt,str):
-            print("agent input:",prompt)
-            output = self.agent.run(prompt,**kwargs)
-            print("agent output:",output)
-            print("agent speech output",state['speech_output'])
-            if state['speech_output']:
-                output = self.text2audio(output)
+        print("history:",history)
+        # print("state:",state)
+  
+
+        if state['character_menu'].strip() == 'Psychologist':
+            system = state['context']
+            output = self.general.run(prompt,system=system,history=history)
+        else:
+            # if last input is a image then do image to image task
+            if isinstance(prompt,str) and len(history) > 0 and \
+                (history[-1][1] is None or history[-1][1] == "") and \
+                (self.is_pil_image(history[-1][0]) or self.is_image_path(history[-1][0])):
+                image_path = ""
+                image_obj = None
+                prev_question = history[-1][0] 
+                print("prev_question:",type(prev_question))
+                if isinstance(prev_question,str):
+                    image_path = prev_question
+                else:
+                    image_obj = prev_question
+                output = self.image_gen.run(prompt,image_path=image_path,image_obj=image_obj)
+
+            elif isinstance(prompt,str):
+                print("agent input:",prompt)
+                output = self.agent.run(prompt,**kwargs)
+                print("agent output:",output)
+                print("agent speech output",state['speech_output'])
+                if state['speech_output']:
+                    output = self.text2audio(output)
 
         # else:
         #     text_output = self.speech.run(prompt,**kwargs)
