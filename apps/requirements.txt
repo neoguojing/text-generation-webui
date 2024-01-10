@@ -8,3 +8,4 @@ transformers-stream-generator==0.0.4
 TTS==0.21.3
 wolframalpha==5.0.0
 langdetect==1.0.9
+faiss_cpu==1.7.4

@@ -16,8 +16,9 @@ from langchain.callbacks.manager import (
 from pydantic import  Field
 from apps.base import Task,CustomerLLM
 from apps.config import model_root
+from langchain_core.embeddings import Embeddings
 
-class Embedding(CustomerLLM):
+class Embedding(Embeddings,CustomerLLM):
     model_path: str = Field(None, alias='model_path')
 
     def __init__(self, model_path: str=os.path.join(model_root,"acge-large-zh"),**kwargs):
@@ -33,8 +34,6 @@ class Embedding(CustomerLLM):
         self.model_path = model_path
         self.tokenizer = AutoTokenizer.from_pretrained(os.path.join(model_root,"acge-large-zh"))
        
-       
-
     @property
     def _llm_type(self) -> str:
         return "aspire/acge-large-zh"
@@ -73,9 +72,22 @@ class Embedding(CustomerLLM):
         """Get the identifying parameters."""
         return {"model_path": self.model_path}
     
+    def embed_documents(self, texts):
+        # Embed a list of documents
+        embeddings = []
+        for text in texts:
+            embedding = self._call(text)
+            embeddings.append(embedding)
+        return embeddings
+    
+    def embed_query(self, text):
+        # Embed a single query
+        embedding = self._call(text)
+        return embedding
+    
 
-# if __name__ == '__main__':
-#     sd = Embedding()
-#     v1 = sd._call("That is a happy person")
-#     v2 = sd._call("That is a very happy person")
-#     print(v1 @ v2.T)
+if __name__ == '__main__':
+    sd = Embedding()
+    v1 = sd.embed_query("That is a happy person")
+    v2 = sd.embed_query("That is a very happy person")
+    print(v1 @ v2.T)
