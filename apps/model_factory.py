@@ -17,6 +17,7 @@ from apps.inference import load_model,chat
 from apps.translate.nllb import Translate
 from apps.multi_task.speech import SeamlessM4t,Whisper,XTTS
 from apps.image.sd import StableDiff,Image2Image
+from apps.embedding.embedding import Embedding
 from apps.config import model_root
 from apps.base import CustomerLLM
 from pydantic import  Field, root_validator
@@ -164,6 +165,8 @@ class ModelFactory:
                         instance = Whisper()
                     elif model_name == "text2speech": 
                         instance = XTTS()
+                    elif model_name == "embedding": 
+                        instance = Embedding()
                     else:
                         raise Exception("Invalid model name")
                     
