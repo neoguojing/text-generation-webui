@@ -221,6 +221,7 @@ class TranslateTask(Task):
     def init_model(self):
         model = ModelFactory.get_model("translate")
         return [model]
+
     
 class TaskFactory:
     _instances = {}
@@ -240,7 +241,7 @@ class TaskFactory:
                             instance = ImageGenTask()
                         elif task_type == TASK_SPEECH:
                             instance = Speech()
-                        elif task_type == TASK_SPEECH:
+                        elif task_type == TASK_GENERAL:
                             instance = General()
 
                         TaskFactory._instances[task_type] = instance

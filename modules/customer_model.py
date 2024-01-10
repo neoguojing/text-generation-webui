@@ -2,13 +2,13 @@ from modules import shared
 from modules.callbacks import Iteratorize
 from modules.logging_colors import logger
 from apps.main import AsyncioThread,input,terminator_output,to_agent,to_speech
-from apps.tasks import TaskFactory,TASK_AGENT,TASK_SPEECH,TASK_IMAGE_GEN
+from apps.tasks import TaskFactory,TASK_AGENT,TASK_SPEECH,TASK_IMAGE_GEN,TASK_GENERAL
 class CustomerModel:
     def __init__(self):
         self.agent = TaskFactory.create_task(TASK_AGENT)
         self.speech = TaskFactory.create_task(TASK_SPEECH)
         self.image_gen = TaskFactory.create_task(TASK_IMAGE_GEN)
-
+        self.general = TaskFactory.create_task(TASK_GENERAL)
         self.loop = AsyncioThread()
         self.loop.start()
 
@@ -41,6 +41,7 @@ class CustomerModel:
 
         history = state['history']['internal']
         print("history:",history)
+        print("state:",state['context'].strip())
         
         # if last input is a image then do image to image task
         if isinstance(prompt,str) and len(history) > 0 and \
