@@ -44,7 +44,7 @@ class CustomerModel:
             history = history[-5:]
 
         print("history:",history)
-        print("state:",state)
+        # print("state:",state)
   
 
         if state['character_menu'].strip() != 'Assistant':
