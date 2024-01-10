@@ -41,7 +41,8 @@ class CustomerModel:
 
         history = state['history']['internal']
         print("history:",history)
-        print("state:",state['context'].strip())
+        # print("state:",state['context'].strip())
+        print("state:",state)
         
         # if last input is a image then do image to image task
         if isinstance(prompt,str) and len(history) > 0 and \
