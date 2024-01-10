@@ -107,15 +107,17 @@ class QwenLLM(CustomerLLM):
         if stop is not None:
             self.react_stop_words_tokens.extend([self.tokenizer.encode(stop_) for stop_ in stop])
         
-        # system = kwargs.pop('system', '')
+        system = kwargs.pop('system', '')
         history = kwargs.pop('history', [])
         print("QwenLLM history:",history)
+        print("QwenLLM system:",system)
         print("QwenLLM prompt:",prompt)
         response, _ = chat(self.model,self.tokenizer,
                            prompt,history=history,
                            chat_format=self.chat_format,
                            max_window_size=self.max_window_size,
-                           stop_words_ids=self.react_stop_words_tokens
+                           stop_words_ids=self.react_stop_words_tokens,
+                           system=system
                            )
         return response
 

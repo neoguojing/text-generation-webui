@@ -159,6 +159,7 @@ def chat(
             max_window_size=max_window_size,
             chat_format=chat_format
         )
+        print("chat raw_text:",raw_text)
         stop_words_ids.extend(get_stop_words_ids(
             chat_format, tokenizer
         ))
