@@ -47,7 +47,7 @@ class CustomerModel:
         print("state:",state)
   
 
-        if state['character_menu'].strip() == 'Psychologist':
+        if state['character_menu'].strip() != 'Assistant':
             system = state['context']
             output = self.general.run(prompt,system=system,history=history)
         else:
