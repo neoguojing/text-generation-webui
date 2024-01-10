@@ -109,7 +109,8 @@ class QwenLLM(CustomerLLM):
         
         # system = kwargs.pop('system', '')
         history = kwargs.pop('history', [])
-        print(history)
+        print("QwenLLM history:",history)
+        print("QwenLLM prompt:",prompt)
         response, _ = chat(self.model,self.tokenizer,
                            prompt,history=history,
                            chat_format=self.chat_format,

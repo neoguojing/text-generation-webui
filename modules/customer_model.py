@@ -40,7 +40,7 @@ class CustomerModel:
         output = None
 
         history = state['history']['internal']
-        print("-----------",history)
+        print("history:",history)
         
         # if last input is a image then do image to image task
         if isinstance(prompt,str) and len(history) > 0 and \
@@ -49,7 +49,7 @@ class CustomerModel:
             image_path = ""
             image_obj = None
             prev_question = history[-1][0] 
-            print("------------",type(prev_question))
+            print("prev_question:",type(prev_question))
             if isinstance(prev_question,str):
                 image_path = prev_question
             else:
@@ -57,10 +57,10 @@ class CustomerModel:
             output = self.image_gen.run(prompt,image_path=image_path,image_obj=image_obj)
 
         elif isinstance(prompt,str):
-            print("--------input:",prompt)
+            print("agent input:",prompt)
             output = self.agent.run(prompt,**kwargs)
-            print("--------output:",output)
-            print("--------------",state['speech_output'])
+            print("agent output:",output)
+            print("agent speech output",state['speech_output'])
             if state['speech_output']:
                 output = self.text2audio(output)
 
