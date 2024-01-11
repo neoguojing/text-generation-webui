@@ -25,7 +25,7 @@ class Retriever(Task):
 
         if not isinstance(file_paths, list):
             file_paths = [file_paths]
-            
+
         for file_path in file_paths:
             if file_path.endswith('.txt'):
                 self.loader = TextLoader(file_path)
@@ -43,7 +43,7 @@ class Retriever(Task):
         return text_splitter.split_documents(documents)
 
     def build_vector_store(self, texts):
-        self.vector_store.from_documents(texts, self.excurtor[0])
+        self.vector_store.add_documents(texts)
 
     def retrieve_documents(self, query, k=5):
         return self.vector_store.retrieve(query, k)
