@@ -63,6 +63,7 @@ class Embedding(Embeddings,CustomerLLM):
         vectors = last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
         
         vectors = vectors.detach().numpy()
+        # 对每行的向量进行归一化
         vectors = normalize(vectors, norm="l2", axis=1)
         print(vectors.shape) 
         return vectors
@@ -72,18 +73,19 @@ class Embedding(Embeddings,CustomerLLM):
         """Get the identifying parameters."""
         return {"model_path": self.model_path}
     
-    def embed_documents(self, texts):
+    def embed_documents(self, texts) -> List[List[float]]:
         # Embed a list of documents
         embeddings = []
         for text in texts:
             embedding = self._call(text)
-            embeddings.append(embedding)
+            for row in embedding:
+                embeddings.append(row)
         return embeddings
     
-    def embed_query(self, text):
+    def embed_query(self, text) -> List[float]:
         # Embed a single query
         embedding = self._call(text)
-        return embedding
+        return embedding[0]
     
 
 # if __name__ == '__main__':
