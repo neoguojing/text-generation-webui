@@ -8,8 +8,8 @@ top_package_path = os.path.abspath(os.path.join(current_dir, ".."))
 
 # 将顶层package路径添加到sys.path
 sys.path.insert(0, top_package_path)
-from langchain.llms import OpenAI,Tongyi
-from langchain.llms import HuggingFacePipeline
+from langchain_community.llms import OpenAI,Tongyi
+from langchain_community.llms import HuggingFacePipeline
 from typing import Any, List, Mapping, Optional
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.llms.base import LLM

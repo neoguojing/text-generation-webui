@@ -44,7 +44,7 @@ class Embedding(Embeddings,CustomerLLM):
     
     def _call(
         self,
-        prompt: str,
+        prompt: Union[str,List[str]],
         stop: Optional[List[str]] = None,
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
@@ -76,10 +76,9 @@ class Embedding(Embeddings,CustomerLLM):
     def embed_documents(self, texts) -> List[List[float]]:
         # Embed a list of documents
         embeddings = []
-        for text in texts:
-            embedding = self._call(text)
-            for row in embedding:
-                embeddings.append(row)
+        embedding = self._call(texts)
+        for row in embedding:
+            embeddings.append(row)
         return embeddings
     
     def embed_query(self, text) -> List[float]:

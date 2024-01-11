@@ -15,6 +15,7 @@ class Retriever(Task):
 
         if os.path.exists(self.index_path):
              self.vector_store = FAISS.load_local(self.index_path, self.excurtor[0])
+             print("load faiss from local index ")
         else:
             index = faiss.IndexFlatL2(1024)
             self.vector_store = FAISS(self.embeddings,index,InMemoryDocstore(),{})

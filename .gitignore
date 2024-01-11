@@ -51,3 +51,6 @@ wandb
 pics/
 audio/
 files/
+
+apps/index.faiss.faiss
+apps/index.faiss.pkl
