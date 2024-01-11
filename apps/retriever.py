@@ -9,23 +9,6 @@ import os
 from apps.base import Task,function_stats
 from typing import Any
 
-def loader(path: str):
-    documents = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-    texts = text_splitter.split_documents(documents)
-    embeddings = OpenAIEmbeddings()
-    db = FAISS.from_documents(texts, embeddings)
-    return db
-
-def search(query: str):
-    retriever = db.as_retriever(
-        search_type="similarity_score_threshold", search_kwargs={"score_threshold": 0.5}
-    )
-    docs = retriever.get_relevant_documents(query)
-    return docs
-
-
-
 class Retriever(Task):
     index_path = "./index.faiss"
     def __init__(self):
@@ -34,21 +17,21 @@ class Retriever(Task):
         if os.path.exists(self.file_path):
              self.vector_store = FAISS.load_local(self.index_path, self.excurtor[0])
         else:
-            index = faiss.IndexFlatL2(1024)  # 使用L2距离度量
+            index = faiss.IndexFlatL2(1024)
             self.vector_store = FAISS(index)
 
     def load_documents(self, file_paths):
         documents = []
         for file_path in file_paths:
             if file_path.endswith('.txt'):
-                loader = TextLoader(file_path)
+                self.loader = TextLoader(file_path)
             elif file_path.endswith('.json'):
-                loader = JSONLoader(file_path)
+                self.loader = JSONLoader(file_path)
             elif file_path.endswith('.pdf'):
-                loader = PDFLoader(file_path)
+                self.loader = PDFLoader(file_path)
             else:
                 raise ValueError("Unsupported file format")
-            documents.extend(loader.load())
+            documents.extend(self.loader.load())
         return documents
 
     def split_documents(self, documents):
@@ -62,13 +45,14 @@ class Retriever(Task):
         return self.vector_store.retrieve(query, k)
     
     @function_stats
-    def run(self,input: Any=None,**kwargs):
+    def run(self, input: Any,**kwargs):
         if input is None or input == "":
-            return ""
+            return 
         docs = self.load_documents(input)
+        print("```````````",docs)
         pages = self.split_documents(docs)
+        print("```````````",pages)
         self.build_vector_store(pages)
-        return ""
     
     async def arun(self,input: Any=None,**kwargs):
         return self.run(input,**kwargs)
@@ -77,3 +61,6 @@ class Retriever(Task):
         model = ModelFactory.get_model("embedding")
         return [model]
 
+if __name__ == '__main__':
+    r = Retriever()
+    r.run("../requirements_amd.txt")

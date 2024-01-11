@@ -25,6 +25,7 @@ from apps.base import Task,function_stats
 from apps.model_factory import ModelFactory
 from apps.prompt import QwenAgentPromptTemplate,translate_prompt
 from apps.parser import QwenAgentOutputParser
+from .retriever import Retriever
 
 TASK_AGENT = 100
 TASK_TRANSLATE = 200
@@ -32,6 +33,7 @@ TASK_DATA_HANDLER = 300
 TASK_IMAGE_GEN = 400
 TASK_SPEECH = 500
 TASK_GENERAL = 600
+TASK_RETRIEVER = 700
 
 
 os.environ['SERPAPI_API_KEY'] = 'f765e0536e1a72c2f353bb1946875937b3ac7bed0270881f966d4147ac0a7943'
@@ -243,6 +245,8 @@ class TaskFactory:
                             instance = Speech()
                         elif task_type == TASK_GENERAL:
                             instance = General()
+                        elif task_type == TASK_RETRIEVER:
+                            instance = Retriever()
 
                         TaskFactory._instances[task_type] = instance
                     except Exception as e:

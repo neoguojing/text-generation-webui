@@ -86,8 +86,8 @@ class Embedding(Embeddings,CustomerLLM):
         return embedding
     
 
-if __name__ == '__main__':
-    sd = Embedding()
-    v1 = sd.embed_query("That is a happy person")
-    v2 = sd.embed_query("That is a very happy person")
-    print(v1 @ v2.T)
+# if __name__ == '__main__':
+#     sd = Embedding()
+#     v1 = sd.embed_query("That is a happy person")
+#     v2 = sd.embed_query("That is a very happy person")
+#     print(v1 @ v2.T)
