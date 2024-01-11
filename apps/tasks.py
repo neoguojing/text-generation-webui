@@ -1,12 +1,12 @@
 from langchain.tools import tool
 from langchain.chains.llm import LLMChain
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
-from langchain import SerpAPIWrapper
+from langchain_community.utilities import SerpAPIWrapper
 from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
-from langchain.utilities import ArxivAPIWrapper
+from langchain_community.utilities import ArxivAPIWrapper
 from langchain.utilities.alpha_vantage import AlphaVantageAPIWrapper
 from langchain.agents import Tool
-from langchain.tools import DuckDuckGoSearchRun
+from langchain_community.tools import DuckDuckGoSearchRun
 import os
 import sys
 import time
@@ -146,6 +146,8 @@ class Agent(Task):
     def run(self,input: Any=None,**kwargs):
         if input is None or input == "":
             return ""
+        
+        print("Agent.run:",kwargs)
         output = self._executor.run(input=input,**kwargs)
         return output
     

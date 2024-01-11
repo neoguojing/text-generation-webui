@@ -3,9 +3,9 @@ from langchain_community.document_loaders import TextLoader, JSONLoader, PyPDFLo
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.docstore.in_memory import InMemoryDocstore
 import faiss
-from model_factory import ModelFactory
+from .model_factory import ModelFactory
 import os
-from base import Task,function_stats
+from .base import Task,function_stats
 from typing import Any
 
 class Retriever(Task):

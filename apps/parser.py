@@ -7,7 +7,7 @@ from pydantic import  Field, BaseModel,validator
 from langchain.schema.agent import AgentAction, AgentFinish
 from langchain.agents.agent import AgentOutputParser
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import DirectoryLoader,TextLoader
+from langchain_community.document_loaders import DirectoryLoader,TextLoader
 
 import os
 import time

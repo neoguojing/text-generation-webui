@@ -2,13 +2,14 @@ from modules import shared
 from modules.callbacks import Iteratorize
 from modules.logging_colors import logger
 from apps.main import AsyncioThread,input,terminator_output,to_agent,to_speech
-from apps.tasks import TaskFactory,TASK_AGENT,TASK_SPEECH,TASK_IMAGE_GEN,TASK_GENERAL
+from apps.tasks import TaskFactory,TASK_AGENT,TASK_SPEECH,TASK_IMAGE_GEN,TASK_GENERAL,TASK_RETRIEVER
 class CustomerModel:
     def __init__(self):
         self.agent = TaskFactory.create_task(TASK_AGENT)
         self.speech = TaskFactory.create_task(TASK_SPEECH)
         self.image_gen = TaskFactory.create_task(TASK_IMAGE_GEN)
         self.general = TaskFactory.create_task(TASK_GENERAL)
+        self.retriever = TaskFactory.create_task(TASK_RETRIEVER)
         self.loop = AsyncioThread()
         self.loop.start()
 
@@ -45,7 +46,10 @@ class CustomerModel:
 
         print("history:",history)
         # print("state:",state)
-  
+
+        texts = self.retriever.retrieve_documents(prompt)
+        if len(texts) > 0:
+            history.append([texts[0],""])
 
         if state['character_menu'].strip() != 'Assistant':
             system = state['context']
@@ -67,7 +71,7 @@ class CustomerModel:
 
             elif isinstance(prompt,str):
                 print("agent input:",prompt)
-                output = self.agent.run(prompt,**kwargs)
+                output = self.agent.run(prompt,history=history)
                 print("agent output:",output)
                 print("agent speech output",state['speech_output'])
                 if state['speech_output']:

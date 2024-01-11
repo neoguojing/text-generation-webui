@@ -52,5 +52,5 @@ pics/
 audio/
 files/
 
-apps/default.faiss
-apps/default.pkl
+default.faiss
+default.pkl

@@ -414,13 +414,16 @@ def set_tone_for_speech(audio_data,state, regenerate=False, _continue=False):
 
 def file_handler(file_objs,state, regenerate=False, _continue=False):
     import shutil
+    from apps.tasks import TaskFactory,TASK_RETRIEVER
     print("file_obj:",type(file_objs))
-
+    task = TaskFactory.create_task(TASK_RETRIEVER)
     # file_name = os.path.basename(file.name)
     # file_path = os.path.join("./files/input",file_name)
     os.makedirs(os.path.dirname("./files/input/"), exist_ok=True)
     for idx, file in enumerate(file_objs):
         shutil.move(file.name,"./files/input/")
+        file_path = "./files/input/" +  os.path.basename(file.name)
+        task.run(file_path)
    
 def image_input_wrapper(image_obj,state, regenerate=False, _continue=False):
     '''
