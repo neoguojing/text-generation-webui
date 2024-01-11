@@ -121,7 +121,7 @@ class Whisper(CustomerLLM):
     sample_rate: Any = 16000
     save_to_file: bool = False
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-    pipe: Any  = None
+    pipeline: Any  = None
 
     def __init__(self, model_path: str = os.path.join(model_root,"whisper"),**kwargs):
         super(Whisper, self).__init__(llm=AutoModelForSpeechSeq2Seq.from_pretrained(
@@ -139,7 +139,7 @@ class Whisper(CustomerLLM):
         self.processor = AutoProcessor.from_pretrained(model_path)
         self.model.to(self.device)
         print(f"Whisper:device ={self.device},sample_rate={self.sample_rate}")
-        self.pipe = pipeline(
+        self.pipeline = pipeline(
             "automatic-speech-recognition",
             model=self.model,
             tokenizer=self.processor.tokenizer,
@@ -176,7 +176,7 @@ class Whisper(CustomerLLM):
             prompt = np.squeeze(prompt)
         print(prompt.shape)
 
-        result = self.pipe(prompt)
+        result = self.pipeline(prompt)
         print("wisper result:",result)
         return result["text"]
 

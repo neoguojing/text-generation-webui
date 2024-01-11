@@ -2,7 +2,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import TextLoader, JSONLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import faiss
-from apps.model_factory import ModelFactory
+from .apps.model_factory import ModelFactory
 import os
 from apps.base import Task,function_stats
 from typing import Any
