@@ -1,7 +1,5 @@
-
-from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.vectorstores import FAISS
-from langchain_community.document_loaders import TextLoader, JSONLoader, PDFLoader
+from langchain_community.document_loaders import TextLoader, JSONLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import faiss
 from apps.model_factory import ModelFactory
@@ -28,7 +26,7 @@ class Retriever(Task):
             elif file_path.endswith('.json'):
                 self.loader = JSONLoader(file_path)
             elif file_path.endswith('.pdf'):
-                self.loader = PDFLoader(file_path)
+                self.loader = PyPDFLoader(file_path)
             else:
                 raise ValueError("Unsupported file format")
             documents.extend(self.loader.load())
