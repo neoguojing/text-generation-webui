@@ -68,3 +68,5 @@ class Retriever(Task):
 if __name__ == '__main__':
     r = Retriever()
     r.run("../requirements_amd.txt")
+    docs = r.retrieve_documents('python_version == "3.11"')
+    print(docs)
