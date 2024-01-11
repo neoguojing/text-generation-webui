@@ -17,7 +17,7 @@ class Retriever(Task):
              self.vector_store = FAISS.load_local(self.index_path, self.excurtor[0])
         else:
             index = faiss.IndexFlatL2(1024)
-            self.vector_store = FAISS(self.embeddings,index,InMemoryDocstore())
+            self.vector_store = FAISS(self.embeddings,index,InMemoryDocstore(),{})
             self.vector_store.save_local("./","index.faiss")
 
     def load_documents(self, file_paths):
