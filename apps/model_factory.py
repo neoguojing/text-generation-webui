@@ -27,7 +27,7 @@ import gc
 import weakref
 
 
-from langchain.chat_models import QianfanChatEndpoint
+from langchain_community.chat_models import QianfanChatEndpoint
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # openai
 os.environ['OPENAI_API_KEY'] = ''

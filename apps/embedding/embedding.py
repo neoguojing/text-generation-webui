@@ -65,7 +65,7 @@ class Embedding(Embeddings,CustomerLLM):
         vectors = vectors.detach().numpy()
         # 对每行的向量进行归一化
         vectors = normalize(vectors, norm="l2", axis=1)
-        print(vectors.shape) 
+        print("_call",vectors.shape) 
         return vectors
 
     @property
@@ -76,6 +76,7 @@ class Embedding(Embeddings,CustomerLLM):
     def embed_documents(self, texts) -> List[List[float]]:
         # Embed a list of documents
         embeddings = []
+        print("embed_documents:",len(texts),type(texts))
         embedding = self._call(texts)
         for row in embedding:
             embeddings.append(row)
