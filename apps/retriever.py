@@ -12,7 +12,7 @@ class Retriever(Task):
     def __init__(self):
         self.embeddings = self.excurtor[0]
 
-        if os.path.exists(self.file_path):
+        if os.path.exists(self.index_path):
              self.vector_store = FAISS.load_local(self.index_path, self.excurtor[0])
         else:
             index = faiss.IndexFlatL2(1024)
