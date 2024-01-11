@@ -19,6 +19,11 @@ class Retriever(Task):
             index = faiss.IndexFlatL2(1024)
             self.vector_store = FAISS(self.embeddings,index,InMemoryDocstore(),{})
             self.vector_store.save_local("./","index.faiss")
+        
+        self.retriever = self.vector_store.as_retriever(
+            search_type="mmr",
+            search_kwargs={"score_threshold": 0.5,"k": 1}
+            )
 
     def load_documents(self, file_paths):
         documents = []
@@ -45,8 +50,8 @@ class Retriever(Task):
     def build_vector_store(self, texts):
         self.vector_store.add_documents(texts)
 
-    def retrieve_documents(self, query, k=5):
-        return self.vector_store.retrieve(query, k)
+    def retrieve_documents(self, query):
+        return self.retriever.get_relevant_documents(query)
     
     @function_stats
     def run(self, input: Any,**kwargs):
