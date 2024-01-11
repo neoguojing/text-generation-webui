@@ -22,6 +22,10 @@ class Retriever(Task):
 
     def load_documents(self, file_paths):
         documents = []
+
+        if not isinstance(file_paths, list):
+            file_paths = [file_paths]
+            
         for file_path in file_paths:
             if file_path.endswith('.txt'):
                 self.loader = TextLoader(file_path)
