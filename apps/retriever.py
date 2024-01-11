@@ -62,6 +62,9 @@ class Retriever(Task):
         pages = self.split_documents(docs)
         print("```````````",pages)
         self.build_vector_store(pages)
+
+        self.vector_store.save_local("./","index.faiss")
+
     
     async def arun(self,input: Any=None,**kwargs):
         return self.run(input,**kwargs)
