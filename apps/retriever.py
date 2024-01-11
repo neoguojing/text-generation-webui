@@ -1,6 +1,7 @@
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import TextLoader, JSONLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.docstore.in_memory import InMemoryDocstore
 import faiss
 from model_factory import ModelFactory
 import os
@@ -15,8 +16,8 @@ class Retriever(Task):
         if os.path.exists(self.index_path):
              self.vector_store = FAISS.load_local(self.index_path, self.excurtor[0])
         else:
-            # index = faiss.IndexFlatL2(1024)
-            self.vector_store = FAISS.from_documents(None,self.embeddings)
+            index = faiss.IndexFlatL2(1024)
+            self.vector_store = FAISS(self.embeddings,index,InMemoryDocstore())
             self.vector_store.save_local("./","index.faiss")
 
     def load_documents(self, file_paths):
