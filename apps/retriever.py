@@ -11,7 +11,7 @@ from typing import Any
 class Retriever(Task):
     index_path = "./"
     index_name = "default"
-    batch_size = 32
+    batch_size = 16
     def __init__(self):
         self.embeddings = self.excurtor[0]
         if os.path.exists(self.index_path+self.index_name+".faiss"):
