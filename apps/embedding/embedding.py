@@ -60,7 +60,7 @@ class Embedding(Embeddings,CustomerLLM):
 
         attention_mask = batch_data["attention_mask"]
         model_output = self.model(**batch_data)
-        last_hidden = model_output.last_hidden_state.masked_fill(~attention_mask[..., None].bool(), 0.0)
+        last_hidden = model_output.cpu().last_hidden_state.masked_fill(~attention_mask[..., None].bool(), 0.0)
         vectors = last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
         
         vectors = vectors.detach().numpy()
