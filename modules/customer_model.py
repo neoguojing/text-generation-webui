@@ -3,6 +3,7 @@ from modules.callbacks import Iteratorize
 from modules.logging_colors import logger
 from apps.main import AsyncioThread,input,terminator_output,to_agent,to_speech
 from apps.tasks import TaskFactory,TASK_AGENT,TASK_SPEECH,TASK_IMAGE_GEN,TASK_GENERAL,TASK_RETRIEVER
+from apps.prompt import system_prompt
 class CustomerModel:
     def __init__(self):
         self.agent = TaskFactory.create_task(TASK_AGENT)
@@ -47,13 +48,11 @@ class CustomerModel:
         print("CustomerModel history:",history)
         # print("state:",state)
 
-        texts = self.retriever.retrieve_documents(prompt)
-        print("retrieve_documents:",texts)
-        if len(texts) > 0:
-            history.append([texts[0],""])
+        contexts = self.retriever.retrieve_documents(prompt)
+        print("retrieve_documents:",contexts)
 
         if state['character_menu'].strip() != 'Assistant':
-            system = state['context']
+            system = system_prompt(state['context'],contexts[0])
             output = self.general.run(prompt,system=system,history=history)
         else:
             # if last input is a image then do image to image task
@@ -72,7 +71,7 @@ class CustomerModel:
 
             elif isinstance(prompt,str):
                 print("agent input:",prompt)
-                output = self.agent.run(prompt,history=history)
+                output = self.agent.run(prompt,history=history,context=contexts[0])
                 print("agent output:",output)
                 print("agent speech output",state['speech_output'])
                 if state['speech_output']:

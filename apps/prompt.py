@@ -86,6 +86,8 @@ template = """Complete the objective as best you can. You have access to the fol
 
 {tools}
 
+Be sure to refer to [{context}] to answer questions
+
 Use the following format:
 
 Question: the input question you must answer
@@ -143,3 +145,9 @@ def stock_code_prompt(input_text):
     template = """Stock Symbol or Ticker Symbol of {input}"""
     prompt = PromptTemplate.from_template(template)
     return prompt.format(input=input_text)
+
+def system_prompt(system,context=""):
+    template = """{system}
+    Be sure to refer to [{context}] to answer questions"""
+    prompt = PromptTemplate.from_template(template)
+    return prompt.format(system=system,context=context)
