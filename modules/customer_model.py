@@ -50,9 +50,12 @@ class CustomerModel:
 
         contexts = self.retriever.retrieve_documents(prompt)
         print("retrieve_documents:",contexts)
+        context = ""
+        if len(contexts) >0:
+            context = contexts[0]
 
         if state['character_menu'].strip() != 'Assistant':
-            system = system_prompt(state['context'],contexts[0])
+            system = system_prompt(state['context'],context)
             output = self.general.run(prompt,system=system,history=history)
         else:
             # if last input is a image then do image to image task
@@ -71,7 +74,7 @@ class CustomerModel:
 
             elif isinstance(prompt,str):
                 print("agent input:",prompt)
-                output = self.agent.run(prompt,history=history,context=contexts[0])
+                output = self.agent.run(prompt,history=history,context=context)
                 print("agent output:",output)
                 print("agent speech output",state['speech_output'])
                 if state['speech_output']:

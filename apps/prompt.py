@@ -86,7 +86,9 @@ template = """Complete the objective as best you can. You have access to the fol
 
 {tools}
 
-Be sure to refer to [{context}] to answer questions
+The factual basis for reference is as follows:
+
+{context}
 
 Use the following format:
 
@@ -147,7 +149,6 @@ def stock_code_prompt(input_text):
     return prompt.format(input=input_text)
 
 def system_prompt(system,context=""):
-    template = """{system}
-    Be sure to refer to [{context}] to answer questions"""
+    template = """{system}\nThe factual basis for reference is as follows:\n{context}"""
     prompt = PromptTemplate.from_template(template)
     return prompt.format(system=system,context=context)
