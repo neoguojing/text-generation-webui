@@ -44,10 +44,11 @@ class CustomerModel:
         if len(history) > 5:
             history = history[-5:]
 
-        print("history:",history)
+        print("CustomerModel history:",history)
         # print("state:",state)
 
         texts = self.retriever.retrieve_documents(prompt)
+        print("retrieve_documents:",texts)
         if len(texts) > 0:
             history.append([texts[0],""])
 
