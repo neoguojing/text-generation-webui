@@ -33,6 +33,7 @@ class Embedding(Embeddings,CustomerLLM):
         # self.model.save_pretrained(os.path.join(model_root,"acge-large-zh"))
         self.model_path = model_path
         self.tokenizer = AutoTokenizer.from_pretrained(os.path.join(model_root,"acge-large-zh"))
+        self.model.to(self.device)
        
     @property
     def _llm_type(self) -> str:
