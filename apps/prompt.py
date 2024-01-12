@@ -86,7 +86,7 @@ template = """Complete the objective as best you can. You have access to the fol
 
 {tools}
 
-The factual basis for reference is as follows:
+Please answer the question based on the following facts. The factual basis for reference is as follows:
 
 {context}
 
@@ -149,6 +149,6 @@ def stock_code_prompt(input_text):
     return prompt.format(input=input_text)
 
 def system_prompt(system,context=""):
-    template = """{system}\nThe factual basis for reference is as follows:\n{context}"""
+    template = """{system}\nPlease answer the question based on the following facts. The factual basis for reference is as follows:\n\n{context}"""
     prompt = PromptTemplate.from_template(template)
     return prompt.format(system=system,context=context)
