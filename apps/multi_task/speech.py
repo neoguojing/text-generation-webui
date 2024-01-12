@@ -209,6 +209,7 @@ class XTTS(CustomerLLM):
     save_to_file: bool = True
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
     speaker_wav: str = Field(None, alias='speaker_wav')
+    pause_length: int= 200  # 停顿音频长度为 500 个采样点
     
     def __init__(self, model_path: str = os.path.join(model_root,"XTTS-v2"),**kwargs):
         super(XTTS, self).__init__(llm=Xtts.init_from_config(config))
@@ -233,15 +234,37 @@ class XTTS(CustomerLLM):
         **kwargs: Any,
     ) -> str:
         generate_speech = kwargs.pop("language","zh-cn")
-        outputs = self.model.synthesize(
-            prompt,
-            config,
-            speaker_wav=self.speaker_wav,
-            gpt_cond_len=3,
-            language=generate_speech,
-        )
-        return self.handle_output(outputs["wav"],prompt=prompt)
+        pause_data = np.zeros(self.pause_length)
+        audio_data = None
+        if generate_speech == "zh-cn":
+            chucks = self.split_text(prompt)
+            for i,chunk in enumerate(chucks):
+                outputs = self.model.synthesize(
+                    chunk,
+                    config,
+                    speaker_wav=self.speaker_wav,
+                    gpt_cond_len=3,
+                    language=generate_speech,
+                )
+                print("XTTS:",outputs["wav"].shape,type(outputs["wav"]))
+                if audio_data is None:
+                    audio_data = outputs["wav"]
+                else:
+                    # if i < len(chucks) - 1:
+                    #     audio_data = np.concatenate((audio_data, pause_data))
+                    # audio_data += outputs["wav"]
+                    audio_data = np.concatenate((audio_data, outputs["wav"]))
+            print("XTTS:",audio_data.shape,type(audio_data))
+        return self.handle_output(audio_data,prompt=prompt)
         # print(outputs["wav"])
+
+    def split_text(self,text, max_length=82):
+        import re
+        pattern = re.compile(r'[，。！？；]')
+        chunks = pattern.split(text)
+        # 将文本按照最大长度进行分割
+        # chunks = [text[i:i+max_length] for i in range(0, len(text), max_length)]
+        return chunks
 
     def handle_output(self,audio_data,prompt=""):
         if self.save_to_file:
