@@ -9,6 +9,7 @@ from modules import chat, shared, ui, utils
 from modules.html_generator import chat_html_wrapper
 from modules.text_generation import stop_everything_event
 from modules.utils import gradio
+import pdb
 
 inputs = ('Chat input', 'interface_state')
 reload_arr = ('history', 'name1', 'name2', 'mode', 'chat_style')
@@ -192,7 +193,7 @@ def create_event_handlers():
 
     shared.gradio['textbox'].submit(
         ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
-        lambda x: (x, ''), gradio('textbox'), gradio('Chat input', 'textbox'), show_progress=False).then(
+        lambda x: (x, None), gradio('textbox'), gradio('Chat input', 'textbox'), show_progress=False).then(
         chat.generate_chat_reply_wrapper, gradio(inputs), gradio('display', 'history'), show_progress=False).then(
         ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
         chat.save_history, gradio('history', 'unique_id', 'character_menu', 'mode'), None).then(
