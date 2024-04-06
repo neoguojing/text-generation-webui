@@ -329,10 +329,13 @@ def character_is_loaded(state, raise_exception=False):
 
 
 import pdb
-def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
+def generate_chat_reply_wrapper(multi_input, state, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
     '''
+    print("------------------------------",multi_input)
+    files = multi_input["files"]
+    text = multi_input["text"]
     if text is None or text.strip() == "":
         return
     
