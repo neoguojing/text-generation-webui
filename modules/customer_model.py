@@ -50,15 +50,17 @@ class CustomerModel:
 
         text = prompt['text']
         files = prompt['files']
-        
+
         output = None
         if len(files) != 0:
             if self.is_audio_path(files[0]):
-                output = self.audio2text(target_audio)
+                output = self.audio2text(files[0])
+                text = output + text
             elif self.is_file_path(files[0]):
                 self.retriever.run(files[0])
             elif self.is_image_path(files[0]):
                 output = self.image_gen.run(text,image_path=files[0])
+                text = ""
             elif self.is_video_path(files[0]):
                 pass
         
@@ -68,9 +70,10 @@ class CustomerModel:
         if len(contexts) >0:
             context = contexts[0]
 
-        output = self.agent.run(text,history=history,context=context)
-        if state['speech_output']:
-            output = self.text2audio(output)
+        if text != "":
+            output = self.agent.run(text,history=history,context=context)
+            if state['speech_output']:
+                output = self.text2audio(output)
         # if state['character_menu'].strip() != 'Assistant':
         #     system = system_prompt(state['context'],context)
         #     output = self.general.run(prompt,system=system,history=history)
