@@ -176,6 +176,12 @@ class Whisper(CustomerLLM):
             prompt = np.squeeze(prompt)
         print(prompt.shape)
 
+        if np.issubdtype(prompt.dtype, np.integer):
+            prompt = prompt.astype(np.float32) / np.iinfo(prompt.dtype).max
+
+        # if rate != 16000:
+        #     target_audio = down_sampling(target_audio,rate)
+
         result = self.pipeline(prompt)
         print("wisper result:",result)
         return result["text"]
