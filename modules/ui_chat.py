@@ -36,8 +36,8 @@ def create_ui():
                         shared.gradio['tone_record'] = gr.Audio(sources="microphone",elem_id='tone-record',label='Tone record')
                         shared.gradio['tone_upload'] = gr.Audio(sources="upload",elem_id='tone-upload',label='Tone upload')
                         
-                with gr.Row(elem_id='image-container'):
-                    shared.gradio['image'] = gr.Image(type="pil",elem_id='image-input',label='Image input')
+                # with gr.Row(elem_id='image-container'):
+                #     shared.gradio['image'] = gr.Image(type="pil",elem_id='image-input',label='Image input')
 
                 with gr.Row(elem_id='file-container'):
                     shared.gradio['file'] = gr.File(file_count="multiple", file_types=["text", ".json", ".csv",".docx",".doc",".pdf"])
@@ -217,13 +217,13 @@ def create_event_handlers():
         chat.set_tone_for_speech, gradio('tone_upload','interface_state'), None, show_progress=False).then(
         lambda: None, None, None, js=f'() => {{{ui.audio_notification_js}}}')
     
-    shared.gradio['image'].upload(
-        ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
-        lambda x: (x, None), gradio('image'), gradio('Image input', 'image'), show_progress=False).then(
-        chat.image_input_wrapper, gradio('Image input','interface_state'), gradio('display', 'history'), show_progress=False).then(
-        ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
-        chat.save_history, gradio('history', 'unique_id', 'character_menu', 'mode'), None).then(
-        lambda: None, None, None, js=f'() => {{{ui.audio_notification_js}}}')
+    # shared.gradio['image'].upload(
+    #     ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
+    #     lambda x: (x, None), gradio('image'), gradio('Image input', 'image'), show_progress=False).then(
+    #     chat.image_input_wrapper, gradio('Image input','interface_state'), gradio('display', 'history'), show_progress=False).then(
+    #     ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(
+    #     chat.save_history, gradio('history', 'unique_id', 'character_menu', 'mode'), None).then(
+    #     lambda: None, None, None, js=f'() => {{{ui.audio_notification_js}}}')
     
     shared.gradio['file'].upload(
         ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state')).then(

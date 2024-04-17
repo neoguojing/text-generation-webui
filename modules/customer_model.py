@@ -4,6 +4,7 @@ from modules.logging_colors import logger
 from apps.main import AsyncioThread,input,terminator_output,to_agent,to_speech
 from apps.tasks import TaskFactory,TASK_AGENT,TASK_SPEECH,TASK_IMAGE_GEN,TASK_GENERAL,TASK_RETRIEVER
 from apps.prompt import system_prompt
+import pdb
 class CustomerModel:
     def __init__(self):
         self.agent = TaskFactory.create_task(TASK_AGENT)
@@ -40,6 +41,14 @@ class CustomerModel:
     def generate(self, prompt, state, callback=None,**kwargs):
         # prompt = prompt if type(prompt) is str else prompt.decode()
         output = None
+        files = None
+        text = None
+        print("input:----------:",prompt)
+        if type(prompt) is str:
+            text = prompt
+        else:
+            text = prompt['text']
+            files = prompt['files']
 
         history = state['history']['internal']
         if len(history) > 5:
@@ -48,11 +57,8 @@ class CustomerModel:
         print("CustomerModel history:",history)
         # print("state:",state)
 
-        text = prompt['text']
-        files = prompt['files']
-
         output = None
-        if len(files) != 0:
+        if files != None and len(files) != 0:
             if self.is_audio_path(files[0]):
                 output = self.audio2text(files[0])
                 text = output + text
@@ -71,7 +77,11 @@ class CustomerModel:
             context = contexts[0]
 
         if text != "":
-            output = self.agent.run(text,history=history,context=context)
+            if state['character_menu'].strip() != 'Assistant':
+                system = system_prompt(state['context'],context)
+                output = self.general.run(prompt,system=system,history=history)
+            else:
+                output = self.agent.run(text,history=history,context=context)
             if state['speech_output']:
                 output = self.text2audio(output)
         # if state['character_menu'].strip() != 'Assistant':

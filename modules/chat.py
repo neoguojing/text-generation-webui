@@ -215,7 +215,10 @@ def chatbot_wrapper(text, state, regenerate=False, _continue=False, loading_mess
     # Prepare the input
     if not any((regenerate, _continue)):
         # visible_text = html.escape(text)
-        visible_text = text
+        if type(text) is str:
+            visible_text = text
+        else:
+            visible_text = text['text']
 
         # Apply extensions
         text, visible_text = apply_extensions('chat_input', text, visible_text, state)
@@ -329,17 +332,17 @@ def character_is_loaded(state, raise_exception=False):
 
 
 import pdb
-def generate_chat_reply_wrapper(multi_input, state, regenerate=False, _continue=False):
+def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
     '''
-    print("------------------------------",multi_input)
-    files = multi_input["files"]
-    text = multi_input["text"]
-    if text is None or text.strip() == "":
+    print("------------------------------",text)
+    # files = multi_input["files"]
+    # text = multi_input["text"]
+    # if text is None or text.strip() == "":
+    if text is None:
         return
-    
-    # pdb.set_trace()
+
     if not character_is_loaded(state):
         return
 
@@ -353,7 +356,7 @@ def generate_chat_reply_wrapper(multi_input, state, regenerate=False, _continue=
         send_dummy_reply(state['start_with'], state)
 
     for i, history in enumerate(generate_chat_reply(text, state, regenerate, _continue, loading_message=True)):
-        # print("generate_chat_reply_wrapper history:",history)
+        print("generate_chat_reply_wrapper history:",history)
         yield chat_html_wrapper(history, state['name1'], state['name2'], state['mode'], state['chat_style']), history
 
 def audio2text_wrapper(record_audio,state, regenerate=False, _continue=False):

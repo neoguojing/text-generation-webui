@@ -167,7 +167,7 @@ def list_interface_input_elements():
         'speech_output',
         'tone_record',
         'tone_upload',
-        'image',
+        # 'image',
         'file',
     ]
 

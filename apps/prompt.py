@@ -139,7 +139,7 @@ class QwenAgentPromptTemplate(BaseChatPromptTemplate):
         return [HumanMessage(content=formatted)]
     
 def translate_prompt(input_text):
-    template = """Translate {input} to English"""
+    template = """Translate {input} to English and only return the translation result"""
     prompt = PromptTemplate.from_template(template)
     return prompt.format(input=input_text)
 

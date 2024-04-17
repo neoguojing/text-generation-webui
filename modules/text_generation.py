@@ -406,6 +406,8 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
     except Exception:
         traceback.print_exc()
     finally:
+        if type(original_question) is not str:
+            original_question = original_question['text']
         if original_question.strip():
             t1 = time.time()
             original_tokens = len(encode(original_question)[0])
