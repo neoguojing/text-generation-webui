@@ -38,7 +38,7 @@ class CustomerModel:
         return string
     
     def generate(self, prompt, state, callback=None,**kwargs):
-        prompt = prompt if type(prompt) is str else prompt.decode()
+        # prompt = prompt if type(prompt) is str else prompt.decode()
         output = None
 
         history = state['history']['internal']
@@ -48,43 +48,58 @@ class CustomerModel:
         print("CustomerModel history:",history)
         # print("state:",state)
 
-        contexts = self.retriever.retrieve_documents(prompt)
+        text = prompt['text']
+        files = prompt['files']
+
+        output = None
+        if len(files) != 0:
+            if self.is_audio_path(files[0]):
+                output = self.audio2text(files[0])
+                text = output + text
+            elif self.is_file_path(files[0]):
+                self.retriever.run(files[0])
+            elif self.is_image_path(files[0]):
+                output = self.image_gen.run(text,image_path=files[0])
+                text = ""
+            elif self.is_video_path(files[0]):
+                pass
+        
+        contexts = self.retriever.retrieve_documents(text)
         print("retrieve_documents:",contexts)
         context = ""
         if len(contexts) >0:
             context = contexts[0]
 
-        if state['character_menu'].strip() != 'Assistant':
-            system = system_prompt(state['context'],context)
-            output = self.general.run(prompt,system=system,history=history)
-        else:
-            # if last input is a image then do image to image task
-            if isinstance(prompt,str) and len(history) > 0 and \
-                (history[-1][1] is None or history[-1][1] == "") and \
-                (self.is_pil_image(history[-1][0]) or self.is_image_path(history[-1][0])):
-                image_path = ""
-                image_obj = None
-                prev_question = history[-1][0] 
-                print("prev_question:",type(prev_question))
-                if isinstance(prev_question,str):
-                    image_path = prev_question
-                else:
-                    image_obj = prev_question
-                output = self.image_gen.run(prompt,image_path=image_path,image_obj=image_obj)
-
-            elif isinstance(prompt,str):
-                print("agent input:",prompt)
-                output = self.agent.run(prompt,history=history,context=context)
-                print("agent output:",output)
-                print("agent speech output",state['speech_output'])
-                if state['speech_output']:
-                    output = self.text2audio(output)
-
+        if text != "":
+            output = self.agent.run(text,history=history,context=context)
+            if state['speech_output']:
+                output = self.text2audio(output)
+        # if state['character_menu'].strip() != 'Assistant':
+        #     system = system_prompt(state['context'],context)
+        #     output = self.general.run(prompt,system=system,history=history)
         # else:
-        #     text_output = self.speech.run(prompt,**kwargs)
-        #     analyse_output = self.agent.run(text_output,**kwargs)
-        #     audio_output = self.speech.run(analyse_output,**kwargs)
-        #     output = audio_output
+        #     # if last input is a image then do image to image task
+        #     if isinstance(prompt,str) and len(history) > 0 and \
+        #         (history[-1][1] is None or history[-1][1] == "") and \
+        #         (self.is_pil_image(history[-1][0]) or self.is_image_path(history[-1][0])):
+        #         image_path = ""
+        #         image_obj = None
+        #         prev_question = history[-1][0] 
+        #         print("prev_question:",type(prev_question))
+        #         if isinstance(prev_question,str):
+        #             image_path = prev_question
+        #         else:
+        #             image_obj = prev_question
+        #         output = self.image_gen.run(prompt,image_path=image_path,image_obj=image_obj)
+
+        #     elif isinstance(prompt,str):
+        #         print("agent input:",prompt)
+        #         output = self.agent.run(prompt,history=history,context=context)
+        #         print("agent output:",output)
+        #         print("agent speech output",state['speech_output'])
+        #         if state['speech_output']:
+        #             output = self.text2audio(output)
+
         return output
     
     def audio2text(self, audio_data):
@@ -111,6 +126,42 @@ class CustomerModel:
             return False
 
         image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
+        extension = os.path.splitext(path)[-1].lower()
+        return extension in image_extensions
+    
+    def is_file_path(self,path):
+        import os
+        if not isinstance(path,str):
+            return False
+        
+        if not os.path.isabs(path) or not os.path.exists(path):
+            return False
+
+        image_extensions = ['.json', '.md', '.csv', '.pdf', '.doc', '.xls']
+        extension = os.path.splitext(path)[-1].lower()
+        return extension in image_extensions
+    
+    def is_audio_path(self,path):
+        import os
+        if not isinstance(path,str):
+            return False
+        
+        if not os.path.isabs(path) or not os.path.exists(path):
+            return False
+
+        image_extensions = ['.mp3', '.wav', '.wma', '.aac', '.ogg', '.aiff']
+        extension = os.path.splitext(path)[-1].lower()
+        return extension in image_extensions
+    
+    def is_video_path(self,path):
+        import os
+        if not isinstance(path,str):
+            return False
+        
+        if not os.path.isabs(path) or not os.path.exists(path):
+            return False
+
+        image_extensions = ['.mp4', '.avi', '.wmv', '.mkv', '.webm', '.flv']
         extension = os.path.splitext(path)[-1].lower()
         return extension in image_extensions
 

@@ -169,12 +169,17 @@ class Whisper(CustomerLLM):
     ) -> str:
         generate_speech = kwargs.pop("language","chinese")
         if isinstance(prompt, str):
-            return prompt
+            sample_rate,prompt = self.load(prompt)
+            if sample_rate != 16000:
+                prompt = self.down_sampling(prompt,sample_rate)
         print(prompt.shape)
 
         if np.ndim(prompt) > 1:
             prompt = np.squeeze(prompt)
         print(prompt.shape)
+
+        if np.issubdtype(prompt.dtype, np.integer):
+            prompt = prompt.astype(np.float32) / np.iinfo(prompt.dtype).max
 
         result = self.pipeline(prompt)
         print("wisper result:",result)
@@ -195,7 +200,15 @@ class Whisper(CustomerLLM):
             audio_data = audio_data.astype(np.float32) / np.iinfo(audio_data.dtype).max
             print("audio_data:",audio_data)
         return sample_rate,audio_data
-
+    def down_sampling(data,orig_sr,target_sr=16000):
+        import scipy.signal as sps
+        # Resample data
+        number_of_samples = round(len(data) * float(target_sr) / orig_sr)
+        decimated_data = sps.resample(data, number_of_samples)
+        # downsample_factor = int(orig_sr / target_sr)  # 降低到目标采样率16,000 Hz
+        # decimated_data = sps.decimate(data, downsample_factor)
+        return decimated_data
+    
 from TTS.tts.configs.xtts_config import XttsConfig
 from TTS.tts.models.xtts import Xtts
 config = XttsConfig()
