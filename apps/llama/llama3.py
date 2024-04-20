@@ -40,7 +40,7 @@ class Llama3(CustomerLLM):
     max_window_size: Optional[int]   = 8192
     stop = ["Observation:", "Observation:\n","\nObservation:"]
     react_stop_words_tokens: Optional[List[List[int]]]
-    terminators:  Optional[List]
+    stop_words_ids: Optional[List[List[int]]]
 
     def __init__(self, model_path: str,**kwargs):
 
@@ -66,9 +66,7 @@ class Llama3(CustomerLLM):
        
         self.model.to(self.device)
         self.react_stop_words_tokens = []
-        for stop_ in self.stop:
-            print(stop_,self.tokenizer.encode(stop_))
-        # self.react_stop_words_tokens = [self.tokenizer.convert_tokens_to_ids(stop_) for stop_ in self.stop]
+        self.stop_words_ids = [self.tokenizer.encode(stop_) for stop_ in self.stop]
         self.react_stop_words_tokens.append(self.tokenizer.eos_token_id)
         self.react_stop_words_tokens.append(self.tokenizer.convert_tokens_to_ids("<|eot_id|>"))
         print("<|eot_id|>",self.tokenizer.convert_tokens_to_ids("<|eot_id|>"))
@@ -90,7 +88,7 @@ class Llama3(CustomerLLM):
         **kwargs: Any,
     ) -> str:
         if stop is not None:
-            self.react_stop_words_tokens.extend([self.tokenizer.convert_tokens_to_ids(stop_) for stop_ in stop])
+            self.stop_words_ids.extend([self.tokenizer.encode(stop_) for stop_ in stop])
         
         system = kwargs.pop('system', '')
         history = kwargs.pop('history', [])
@@ -113,11 +111,12 @@ class Llama3(CustomerLLM):
         print("Llama3 input_ids:",self.react_stop_words_tokens)
         outputs = self.model.generate(
             input_ids,
-            max_new_tokens=256,
+            max_new_tokens=self.max_window_size,
             eos_token_id=self.react_stop_words_tokens,
             do_sample=True,
             temperature=0.6,
             top_p=0.9,
+            # stop_words_ids=self.stop_words_ids,
         )
         response = outputs[0][input_ids.shape[-1]:]
         return self.tokenizer.decode(response, skip_special_tokens=True)
@@ -128,10 +127,10 @@ class Llama3(CustomerLLM):
         return {"model_path": self.model_path}
 
 
-if __name__ == '__main__':
-    prompt = '''
-    俄乌战争
-    '''
-    model = Llama3(model_path=os.path.join(model_root,"llama3"))
-    out = model._call(prompt,system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])
-    print(out)
+# if __name__ == '__main__':
+#     prompt = '''
+#     俄乌战争
+#     '''
+#     model = Llama3(model_path=os.path.join(model_root,"llama3"))
+#     out = model._call(prompt,system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])
+#     print(out)
