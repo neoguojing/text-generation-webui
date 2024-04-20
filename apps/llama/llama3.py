@@ -1,6 +1,6 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
-
+from langchain.callbacks.manager import CallbackManagerForLLMRun
 import os
 import sys
 # 获取当前脚本所在的目录路径
@@ -24,7 +24,11 @@ from typing import (
     Sequence,
     TypedDict,
     Union,
+    Optional,
+    Any,
+    Mapping,
 )
+from pydantic import  Field
 
 Role = Literal["system", "user", "assistant"]
 class Message(TypedDict):
@@ -33,7 +37,6 @@ class Message(TypedDict):
 
 class Llama3(CustomerLLM):
     model_path: str = Field(None, alias='model_path')
-    chat_format: Optional[str]   = 'chatml'
     max_window_size: Optional[int]   = 8192
     stop = ["Observation:", "Observation:\n","\nObservation:"]
     react_stop_words_tokens: Optional[List[List[int]]]
@@ -62,9 +65,13 @@ class Llama3(CustomerLLM):
         
        
         self.model.to(self.device)
-        self.react_stop_words_tokens = [self.tokenizer.encode(stop_) for stop_ in self.stop]
+        self.react_stop_words_tokens = []
+        for stop_ in self.stop:
+            print(stop_,self.tokenizer.encode(stop_))
+        # self.react_stop_words_tokens = [self.tokenizer.convert_tokens_to_ids(stop_) for stop_ in self.stop]
         self.react_stop_words_tokens.append(self.tokenizer.eos_token_id)
-        self.react_stop_words_tokens.extend(self.tokenizer.convert_tokens_to_ids("<|eot_id|>"))
+        self.react_stop_words_tokens.append(self.tokenizer.convert_tokens_to_ids("<|eot_id|>"))
+        print("<|eot_id|>",self.tokenizer.convert_tokens_to_ids("<|eot_id|>"))
         
 
     @property
@@ -83,33 +90,31 @@ class Llama3(CustomerLLM):
         **kwargs: Any,
     ) -> str:
         if stop is not None:
-            self.react_stop_words_tokens.extend([self.tokenizer.encode(stop_) for stop_ in stop])
+            self.react_stop_words_tokens.extend([self.tokenizer.convert_tokens_to_ids(stop_) for stop_ in stop])
         
         system = kwargs.pop('system', '')
         history = kwargs.pop('history', [])
-        print("Llama3 history:",history)
-        print("Llama3 system:",system)
-        print("Llama3 prompt:",prompt)
-
+        
         messages = []
-        messages.append(Message = {"role": "system", "content": system})
+        messages.append({"role": "system", "content": system})
         for row in history:
             if row is None or len(row) < 2:
                 continue
-            messages.append(Message = {"role": "user", "content": row[0]})
-            messages.append(Message = {"role": "assistant", "content": row[1]})
-        messages.append(Message = {"role": "user", "content": prompt})
+            messages.append({"role": "user", "content": row[0]})
+            messages.append({"role": "assistant", "content": row[1]})
+        messages.append({"role": "user", "content": prompt})
+        print("Llama3 messages:",messages)
 
         input_ids = self.tokenizer.apply_chat_template(
                 messages,
                 add_generation_prompt=True,
                 return_tensors="pt"
             ).to(self.model.device)
-
+        print("Llama3 input_ids:",self.react_stop_words_tokens)
         outputs = self.model.generate(
             input_ids,
             max_new_tokens=256,
-            eos_token_id=react_stop_words_tokens,
+            eos_token_id=self.react_stop_words_tokens,
             do_sample=True,
             temperature=0.6,
             top_p=0.9,
@@ -121,3 +126,12 @@ class Llama3(CustomerLLM):
     def _identifying_params(self) -> Mapping[str, Any]:
         """Get the identifying parameters."""
         return {"model_path": self.model_path}
+
+
+if __name__ == '__main__':
+    prompt = '''
+    俄乌战争
+    '''
+    model = Llama3(model_path=os.path.join(model_root,"llama3"))
+    out = model._call(prompt,system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])
+    print(out)
