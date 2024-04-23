@@ -12,3 +12,17 @@
 > /data/llama/text-generation-webui/modules/text_generation.py(389)generate_reply_custom()
 
 ```
+
+langchain:
+
+class Chain.invoke
+
+class AgentExecutor(Chain)._call
+
+LLMSingleActionAgent.plan
+
+class Chain.run
+Chain.invoke
+class LLMChain(Chain)._call
+class LLMChain(Chain).generate
+class LLMChain(Chain).prep_prompts

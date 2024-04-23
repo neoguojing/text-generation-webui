@@ -43,7 +43,7 @@ class CustomerModel:
         output = None
         files = None
         text = None
-        print("input:----------:",prompt)
+        # print("input:----------:",prompt)
         if type(prompt) is str:
             text = prompt
         else:
@@ -54,7 +54,7 @@ class CustomerModel:
         if len(history) > 5:
             history = history[-5:]
 
-        print("CustomerModel history:",history)
+        # print("CustomerModel history:",history)
         # print("state:",state)
 
         output = None
@@ -71,7 +71,7 @@ class CustomerModel:
                 pass
         
         contexts = self.retriever.retrieve_documents(text)
-        print("retrieve_documents:",contexts)
+        # print("retrieve_documents:",contexts)
         context = ""
         if len(contexts) >0:
             context = contexts[0]

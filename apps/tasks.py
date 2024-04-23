@@ -122,7 +122,7 @@ class Agent(Task):
             tools=tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because that is needed
-            input_variables=["input", "intermediate_steps",'history','context']
+            input_variables=["input", "intermediate_steps"]
         )
         # from langchain.memory import ConversationBufferMemory
         # self.memory = ConversationBufferMemory(memory_key="history")
@@ -147,16 +147,16 @@ class Agent(Task):
         if input is None or input == "":
             return ""
         
-        print("Agent.run:",kwargs)
-        output = self._executor.run(input=input,**kwargs)
+        # print("Agent.run:",kwargs)
+        output = self._executor.invoke(input=input,**kwargs)
         return output
     
     async def arun(self,input: Any=None,**kwargs):
         return self.run(input,**kwargs)
     
     def init_model(self):
-        # model = ModelFactory.get_model("qwen")
-        model = ModelFactory.get_model("llama3")
+        model = ModelFactory.get_model("qwen")
+        # model = ModelFactory.get_model("llama3")
         return [model]
     
     def destroy(self):

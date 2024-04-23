@@ -76,5 +76,5 @@ def parse_stock_code(input:str):
             break
     return stock_symbol.rstrip('.')
 
-if __name__ == '__main__':
-    print(get_stock("MSFT"))
+# if __name__ == '__main__':
+#     print(get_stock("MSFT"))

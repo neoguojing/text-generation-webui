@@ -88,8 +88,6 @@ template = """Complete the objective as best you can. You have access to the fol
 
 Please answer the question based on the following facts. The factual basis for reference is as follows:
 
-{context}
-
 Use the following format:
 
 Question: the input question you must answer
@@ -107,26 +105,28 @@ These were previous tasks you completed:
 
 Begin!
 
-{history}
 Question: {input}
 {agent_scratchpad}"""
 
+import pdb
 class QwenAgentPromptTemplate(BaseChatPromptTemplate):
+    
     # The template to use
     template: str = template
     # The list of tools available
     tools: List[Tool]
 
     def format_messages(self, **kwargs) -> str:
+        pdb.set_trace()
         # Get the intermediate steps (AgentAction, Observation tuples)
         # Format them in a particular way
         intermediate_steps = kwargs.pop("intermediate_steps")
 
-        print("intermediate_steps:",intermediate_steps)
+        # print("intermediate_steps:",intermediate_steps)
         thoughts = ""
         for action, observation in intermediate_steps:
-            print("action:",action)
-            print("observation:",observation)
+            # print("action:",action)
+            # print("observation:",observation)
             thoughts += action.log
             thoughts += f"\nObservation: {observation}\nThought: "
         # Set the agent_scratchpad variable to that value

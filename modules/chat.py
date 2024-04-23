@@ -336,7 +336,7 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
     '''
     Same as above but returns HTML for the UI
     '''
-    print("------------------------------",text)
+    # print("------------------------------",text)
     # files = multi_input["files"]
     # text = multi_input["text"]
     # if text is None or text.strip() == "":
@@ -356,7 +356,7 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
         send_dummy_reply(state['start_with'], state)
 
     for i, history in enumerate(generate_chat_reply(text, state, regenerate, _continue, loading_message=True)):
-        print("generate_chat_reply_wrapper history:",history)
+        # print("generate_chat_reply_wrapper history:",history)
         yield chat_html_wrapper(history, state['name1'], state['name2'], state['mode'], state['chat_style']), history
 
 def audio2text_wrapper(record_audio,state, regenerate=False, _continue=False):
