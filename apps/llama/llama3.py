@@ -12,6 +12,7 @@ top_package_path = os.path.abspath(os.path.join(current_dir, "../../"))
 # 将顶层package路径添加到sys.path
 sys.path.insert(0, top_package_path)
 from apps.config import model_root
+from apps.base import CustomerLLM
 from apps.base import Task,CustomerLLM
 from typing import (
     AbstractSet,
