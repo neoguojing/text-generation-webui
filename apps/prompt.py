@@ -38,7 +38,7 @@ class PromptFactory:
 from typing import List, Union
 from langchain.prompts import BaseChatPromptTemplate
 from langchain.agents import Tool
-from langchain.schema import HumanMessage
+from langchain_core.messages import HumanMessage, BaseMessage
 
 TOOL_DESC = """{name_for_model}: Call this tool to interact with the {name_for_human} API. What is the {name_for_human} API useful \
     for? {description_for_model} Parameters: {parameters} Format the arguments as a JSON object."""
@@ -117,7 +117,7 @@ class QwenAgentPromptTemplate(BaseChatPromptTemplate):
     # The list of tools available
     tools: List[Tool]
 
-    def format_messages(self, **kwargs) -> str:
+    def format_messages(self, **kwargs) -> List[BaseMessage]:
         # Get the intermediate steps (AgentAction, Observation tuples)
         # Format them in a particular way
         intermediate_steps = kwargs.pop("intermediate_steps")
