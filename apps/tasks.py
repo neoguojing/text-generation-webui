@@ -149,6 +149,7 @@ class Agent(Task):
         
         # print("Agent.run:",kwargs)
         output = self._executor.invoke(input=input,**kwargs)
+        print("Agent.run----------------------:",output)
         return output
     
     async def arun(self,input: Any=None,**kwargs):

@@ -38,7 +38,7 @@ class PromptFactory:
 from typing import List, Union
 from langchain.prompts import BaseChatPromptTemplate
 from langchain.agents import Tool
-from langchain_core.messages import HumanMessage, BaseMessage
+from langchain_core.messages import HumanMessage, BaseMessage,SystemMessage,AIMessage
 
 TOOL_DESC = """{name_for_model}: Call this tool to interact with the {name_for_human} API. What is the {name_for_human} API useful \
     for? {description_for_model} Parameters: {parameters} Format the arguments as a JSON object."""
@@ -108,6 +108,8 @@ Begin!
 Question: {input}
 {agent_scratchpad}"""
 
+
+
 import pdb
 class QwenAgentPromptTemplate(BaseChatPromptTemplate):
     
@@ -116,7 +118,7 @@ class QwenAgentPromptTemplate(BaseChatPromptTemplate):
     # The list of tools available
     tools: List[Tool]
 
-    def format_messages(self, **kwargs) -> List[BaseMessage]:
+    def format_messages(self, **kwargs) -> str:
         # Get the intermediate steps (AgentAction, Observation tuples)
         # Format them in a particular way
         intermediate_steps = kwargs.pop("intermediate_steps")
@@ -135,8 +137,67 @@ class QwenAgentPromptTemplate(BaseChatPromptTemplate):
         # Create a list of tool names for the tools provided
         kwargs["tool_names"] = ", ".join([tool.name for tool in self.tools])
         formatted = self.template.format(**kwargs)
-        return [HumanMessage(content=formatted)]
+        return [
+                HumanMessage(content=formatted)
+            ]
+
+# agent_template = """Complete the objective as best you can. You have access to the following tools:
+
+# {tools}
+
+# Please answer the question based on the following facts. The factual basis for reference is as follows:
+
+# Use the following format:
+
+# Question: the input question you must answer
+# Thought: you should always think about what to do
+# Action: the action to take, should be one of [{tool_names}]
+# Action Input: the input to the action
+# Observation: the result of the action
+# ... (this Thought/Action/Action Input/Observation can repeat N times)
+# Thought: I now know the final answer
+# Final Answer: the final answer to the original input question
+
+# These were previous tasks you completed:
+
+
+
+# Begin!
+
+# """
+
+# class AgentPromptTemplate(BaseChatPromptTemplate):
     
+#     # The template to use
+#     template: str = template
+#     # The list of tools available
+#     tools: List[Tool]
+
+#     def format_messages(self, **kwargs) -> List[BaseMessage]:
+#         # Get the intermediate steps (AgentAction, Observation tuples)
+#         # Format them in a particular way
+#         intermediate_steps = kwargs.pop("intermediate_steps")
+
+#         # print("intermediate_steps:",intermediate_steps)
+#         thoughts = ""
+#         for action, observation in intermediate_steps:
+#             # print("action:",action)
+#             # print("observation:",observation)
+#             thoughts += action.log
+#             thoughts += f"\nObservation: {observation}\nThought: "
+#         # Set the agent_scratchpad variable to that value
+#         kwargs["agent_scratchpad"] = thoughts
+#         # Create a tools variable from the list of tools provided
+#         kwargs["tools"] = "\n".join([f"{tool.name}: {tool.description}" for tool in self.tools])
+#         # Create a list of tool names for the tools provided
+#         kwargs["tool_names"] = ", ".join([tool.name for tool in self.tools])
+#         formatted = self.template.format(**kwargs)
+#         return [
+#                 SystemMessage(content=formatted),
+#                 HumanMessage(content=kwargs["input"]),
+#                 AIMessage(content=kwargs["agent_scratchpad"])
+#             ]
+      
 def translate_prompt(input_text):
     template = """Translate {input} to English and only return the translation result"""
     prompt = PromptTemplate.from_template(template)
