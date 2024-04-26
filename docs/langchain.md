@@ -89,3 +89,13 @@ class LLMChain(Chain):
     """Whether to return only the final parsed result. Defaults to True.
     If false, will return a bunch of extra information about the generation."""
     llm_kwargs: dict = Field(default_factory=dict)
+
+
+agent 流程：
+
+1. excutor.invoke
+2. Chain.invoke
+3. AgentExecutor._call
+4. 循环执行：AgentExecutor._take_next_step
+5.RunnableAgent(BaseSingleActionAgent).plan
+6. RunnableSequence._stream

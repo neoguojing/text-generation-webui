@@ -86,52 +86,52 @@ class CustomChatModelAdvanced(BaseChatModel):
 
         return ret
 
-    def _stream(
-        self,
-        messages: List[BaseMessage],
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
-        **kwargs: Any,
-    ) -> Iterator[ChatGenerationChunk]:
-        """Stream the output of the model.
+    # def _stream(
+    #     self,
+    #     messages: List[BaseMessage],
+    #     stop: Optional[List[str]] = None,
+    #     run_manager: Optional[CallbackManagerForLLMRun] = None,
+    #     **kwargs: Any,
+    # ) -> Iterator[ChatGenerationChunk]:
+    #     """Stream the output of the model.
 
-        This method should be implemented if the model can generate output
-        in a streaming fashion. If the model does not support streaming,
-        do not implement it. In that case streaming requests will be automatically
-        handled by the _generate method.
+    #     This method should be implemented if the model can generate output
+    #     in a streaming fashion. If the model does not support streaming,
+    #     do not implement it. In that case streaming requests will be automatically
+    #     handled by the _generate method.
 
-        Args:
-            messages: the prompt composed of a list of messages.
-            stop: a list of strings on which the model should stop generating.
-                  If generation stops due to a stop token, the stop token itself
-                  SHOULD BE INCLUDED as part of the output. This is not enforced
-                  across models right now, but it's a good practice to follow since
-                  it makes it much easier to parse the output of the model
-                  downstream and understand why generation stopped.
-            run_manager: A run manager with callbacks for the LLM.
-        """
-        last_message = messages[-1]
-        tokens = last_message.content[: self.n]
+    #     Args:
+    #         messages: the prompt composed of a list of messages.
+    #         stop: a list of strings on which the model should stop generating.
+    #               If generation stops due to a stop token, the stop token itself
+    #               SHOULD BE INCLUDED as part of the output. This is not enforced
+    #               across models right now, but it's a good practice to follow since
+    #               it makes it much easier to parse the output of the model
+    #               downstream and understand why generation stopped.
+    #         run_manager: A run manager with callbacks for the LLM.
+    #     """
+    #     last_message = messages[-1]
+    #     tokens = last_message.content[: self.n]
 
-        for token in tokens:
-            chunk = ChatGenerationChunk(message=AIMessageChunk(content=token))
+    #     for token in tokens:
+    #         chunk = ChatGenerationChunk(message=AIMessageChunk(content=token))
 
-            if run_manager:
-                # This is optional in newer versions of LangChain
-                # The on_llm_new_token will be called automatically
-                run_manager.on_llm_new_token(token, chunk=chunk)
+    #         if run_manager:
+    #             # This is optional in newer versions of LangChain
+    #             # The on_llm_new_token will be called automatically
+    #             run_manager.on_llm_new_token(token, chunk=chunk)
 
-            yield chunk
+    #         yield chunk
 
-        # Let's add some other information (e.g., response metadata)
-        chunk = ChatGenerationChunk(
-            message=AIMessageChunk(content="", response_metadata={"time_in_sec": 3})
-        )
-        if run_manager:
-            # This is optional in newer versions of LangChain
-            # The on_llm_new_token will be called automatically
-            run_manager.on_llm_new_token(token, chunk=chunk)
-        yield chunk
+    #     # Let's add some other information (e.g., response metadata)
+    #     chunk = ChatGenerationChunk(
+    #         message=AIMessageChunk(content="", response_metadata={"time_in_sec": 3})
+    #     )
+    #     if run_manager:
+    #         # This is optional in newer versions of LangChain
+    #         # The on_llm_new_token will be called automatically
+    #         run_manager.on_llm_new_token(token, chunk=chunk)
+    #     yield chunk
 
     @property
     def _llm_type(self) -> str:
@@ -153,24 +153,65 @@ class CustomChatModelAdvanced(BaseChatModel):
             "model_name": self.model_name,
         }
     
+from langchain.tools import BaseTool, StructuredTool, tool
+@tool
+def search(query: str) -> str:
+    """Look up things online."""
+    return "LangChain"
+
 if __name__ == '__main__':
     model = CustomChatModelAdvanced(n=3, model_name="my_custom_model")
-    out = model.invoke(
-        [
-            HumanMessage(content="hello!"),
-            AIMessage(content="Hi there human!"),
-            HumanMessage(content="Meow!"),
-        ]
+    # out = model.invoke(
+    #     [
+    #         HumanMessage(content="hello!"),
+    #         AIMessage(content="Hi there human!"),
+    #         HumanMessage(content="Meow!"),
+    #     ]
     
-    )
-    print("llm out:",out)
-    from langchain_core.prompts import ChatPromptTemplate
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are a world class technical documentation writer."),
-        ("user", "{input}")
-    ])
+    # )
+    # print("llm out:",out)
+    # from langchain_core.prompts import ChatPromptTemplate
+    # prompt = ChatPromptTemplate.from_messages([
+    #     ("system", "You are a world class technical documentation writer."),
+    #     ("user", "{input}")
+    # ])
 
-    chain = prompt | model 
-    out = chain.invoke({"input": "how can langsmith help with testing?"})
-    print("chain out:",out)
+    # chain = prompt | model 
+    # out = chain.invoke({"input": "how can langsmith help with testing?"})
+    # print("chain out:",out)
+    import os
+    import sys
+    from typing import Any
+    # 获取当前脚本所在的目录路径
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # 将当前package的父目录作为顶层package的路径
+    top_package_path = os.path.abspath(os.path.join(current_dir, ".."))
+
+    # 将顶层package路径添加到sys.path
+    sys.path.insert(0, top_package_path)
+    from apps.prompt import AgentPromptTemplate
+    from apps.parser import QwenAgentOutputParser
+    from langchain.chains.llm import LLMChain
+    from langchain.agents import AgentExecutor,create_react_agent
+
+    prompt = AgentPromptTemplate(
+            tools=[],
+            # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
+            # This includes the `intermediate_steps` variable because that is needed
+            input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
+        )
+    
+    tools = [search]
+    # tool_names = [tool.name for tool in tools]
+
+    agent = create_react_agent(
+        llm=model,
+        tools=tools,
+        prompt=prompt
+    )
+
+    excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True)
+    pdb.set_trace()
+    excutor.invoke({"input": "how can langsmith help with testing?"})
     
