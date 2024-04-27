@@ -13,6 +13,7 @@ from langchain_community.llms import HuggingFacePipeline
 from typing import Any, List, Mapping, Optional
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.llms.base import LLM
+from langchain_core.language_models import BaseChatModel
 from apps.inference import load_model,chat
 from apps.translate.nllb import Translate
 from apps.multi_task.speech import SeamlessM4t,Whisper,XTTS
@@ -27,8 +28,9 @@ import threading
 import gc
 import weakref
 
-
+from langchain_core.messages import BaseMessage, HumanMessage,AIMessage,SystemMessage
 from langchain_community.chat_models import QianfanChatEndpoint
+from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult,LLMResult
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # openai
 os.environ['OPENAI_API_KEY'] = ''
@@ -75,7 +77,7 @@ class LLamaLLM(CustomerLLM):
         """Get the identifying parameters."""
         return {"model_path": self.model_path}
 
-class QwenLLM(CustomerLLM):
+class QwenLLM(CustomerLLM,BaseChatModel):
     model_path: str = Field(None, alias='model_path')
     chat_format: Optional[str]   = 'chatml'
     max_window_size: Optional[int]   = 8192
@@ -99,6 +101,28 @@ class QwenLLM(CustomerLLM):
     def model_name(self) -> str:
         return "qwen"
 
+    def _generate(
+        self,
+        messages: List[BaseMessage],
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+        system,history,query = self._format_message(messages)
+        print("qwen input-----------:",system,history,query)
+        decode_resp = self._call(query,history=history,system=system)
+        print("qwen output-----------:",decode_resp)
+        message = AIMessage(
+            content=decode_resp,
+            additional_kwargs={},  # Used to add additional payload (e.g., function calling request)
+            response_metadata={  # Use for response metadata
+                "time_in_seconds": 3,
+            },
+        )
+
+        generation = ChatGeneration(message=message)
+        return ChatResult(generations=[generation])
+    
     def _call(
         self,
         prompt: str,
@@ -111,9 +135,6 @@ class QwenLLM(CustomerLLM):
         
         system = kwargs.pop('system', '')
         history = kwargs.pop('history', [])
-        # print("QwenLLM history:",history)
-        # print("QwenLLM system:",system)
-        # print("QwenLLM prompt:",prompt)
         response, _ = chat(self.model,self.tokenizer,
                            prompt,history=history,
                            chat_format=self.chat_format,
@@ -127,6 +148,28 @@ class QwenLLM(CustomerLLM):
     def _identifying_params(self) -> Mapping[str, Any]:
         """Get the identifying parameters."""
         return {"model_path": self.model_path}
+    
+    def _format_message(self,
+                        messages: List[BaseMessage]) :
+        system = ""
+        history = []
+        query = ""
+        anwser = ""
+        for item in messages:
+            if isinstance(item,SystemMessage):
+                system = item.content
+            if isinstance(item,AIMessage):
+                anwser = item.content
+            if isinstance(messages[-1],HumanMessage):
+                query = item.content
+            
+            if anwser != "":
+                history.append([query,anwser])
+                anwser = ""
+                query = ""
+
+
+        return system,history,query
 
 class ModelFactory:
     temperature = 0

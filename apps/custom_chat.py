@@ -191,7 +191,7 @@ if __name__ == '__main__':
     # 将顶层package路径添加到sys.path
     sys.path.insert(0, top_package_path)
     from apps.prompt import AgentPromptTemplate
-    from apps.llama.llama3 import Llama3
+    from apps.llama.llama3_chat import Llama3Chat
     from langchain.chains.llm import LLMChain
     from langchain.agents import AgentExecutor,create_react_agent
     from apps.config import model_root
@@ -204,7 +204,7 @@ if __name__ == '__main__':
     
     tools = [search]
     # tool_names = [tool.name for tool in tools]
-    model = Llama3(model_path=os.path.join(model_root,"llama3"))
+    model = Llama3Chat(model_path=os.path.join(model_root,"llama3"))
     agent = create_react_agent(
         llm=model,
         tools=tools,
@@ -213,5 +213,5 @@ if __name__ == '__main__':
 
     excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,handle_parsing_errors=True)
     # pdb.set_trace()
-    excutor.invoke({"input": "how can langsmith help with testing?"})
+    excutor.invoke({"input": "微积分的分类，请使用中文回答"})
     

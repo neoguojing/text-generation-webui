@@ -155,9 +155,9 @@ class Agent(Task):
         if input is None or input == "":
             return ""
         
-        print("Agent.run:---------------",input)
-        output = self._executor.invoke(input=input,**kwargs)
-        print("Agent.run----------------------:",output)
+        print("Agent.run input---------------",input)
+        output = self._executor.invoke({"input":input},**kwargs)
+        print("Agent.run output----------------------:",output)
         return output
     
     async def arun(self,input: Any=None,**kwargs):
