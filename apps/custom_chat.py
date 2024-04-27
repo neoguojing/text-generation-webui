@@ -160,7 +160,7 @@ def search(query: str) -> str:
     return "LangChain"
 
 if __name__ == '__main__':
-    model = CustomChatModelAdvanced(n=3, model_name="my_custom_model")
+    # model = CustomChatModelAdvanced(n=3, model_name="my_custom_model")
     # out = model.invoke(
     #     [
     #         HumanMessage(content="hello!"),
@@ -191,10 +191,10 @@ if __name__ == '__main__':
     # 将顶层package路径添加到sys.path
     sys.path.insert(0, top_package_path)
     from apps.prompt import AgentPromptTemplate
-    from apps.parser import QwenAgentOutputParser
+    from apps.llama.llama3 import Llama3
     from langchain.chains.llm import LLMChain
     from langchain.agents import AgentExecutor,create_react_agent
-
+    from apps.config import model_root
     prompt = AgentPromptTemplate(
             tools=[],
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
@@ -204,14 +204,14 @@ if __name__ == '__main__':
     
     tools = [search]
     # tool_names = [tool.name for tool in tools]
-
+    model = Llama3(model_path=os.path.join(model_root,"llama3"))
     agent = create_react_agent(
         llm=model,
         tools=tools,
         prompt=prompt
     )
 
-    excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True)
-    pdb.set_trace()
+    excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,handle_parsing_errors=True)
+    # pdb.set_trace()
     excutor.invoke({"input": "how can langsmith help with testing?"})
     

@@ -5,7 +5,7 @@ from langchain_community.utilities import SerpAPIWrapper
 from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
 from langchain_community.utilities import ArxivAPIWrapper
 from langchain.utilities.alpha_vantage import AlphaVantageAPIWrapper
-from langchain.agents import Tool
+from langchain.agents import Tool,create_react_agent
 from langchain_community.tools import DuckDuckGoSearchRun
 import os
 import sys
@@ -122,7 +122,7 @@ class Agent(Task):
             tools=tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because that is needed
-            input_variables=["input", "intermediate_steps"]
+            input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
         )
         # from langchain.memory import ConversationBufferMemory
         # self.memory = ConversationBufferMemory(memory_key="history")
@@ -131,23 +131,31 @@ class Agent(Task):
         llm_chain = LLMChain(llm=self.excurtor[0], prompt=prompt)
 
         tool_names = [tool.name for tool in tools]
-        # agent = LLMSingleActionAgent(
-        agent = CustomAgent(
-            llm_chain=llm_chain,
-            output_parser=output_parser,
-            stop=["\nObservation:"],
-            allowed_tools=tool_names,
-            max_iterations=5,
+
+        # agent = CustomAgent(
+        #     llm_chain=llm_chain,
+        #     output_parser=output_parser,
+        #     stop=["\nObservation:"],
+        #     allowed_tools=tool_names,
+        #     max_iterations=5,
+        # )
+
+        # self._executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
+
+        agent = create_react_agent(
+            llm=self.excurtor[0],
+            tools=tools,
+            prompt=prompt
         )
 
-        self._executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
+        self._executor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True)
 
     @function_stats
     def run(self,input: Any=None,**kwargs):
         if input is None or input == "":
             return ""
         
-        # print("Agent.run:",kwargs)
+        print("Agent.run:---------------",input)
         output = self._executor.invoke(input=input,**kwargs)
         print("Agent.run----------------------:",output)
         return output
