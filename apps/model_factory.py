@@ -160,7 +160,7 @@ class QwenLLM(CustomerLLM,BaseChatModel):
                 system = item.content
             if isinstance(item,AIMessage):
                 anwser = item.content
-            if isinstance(messages[-1],HumanMessage):
+            if isinstance(item,HumanMessage):
                 query = item.content
             
             if anwser != "":
