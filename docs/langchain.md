@@ -97,5 +97,5 @@ agent 流程：
 2. Chain.invoke
 3. AgentExecutor._call
 4. 循环执行：AgentExecutor._take_next_step
-5.RunnableAgent(BaseSingleActionAgent).plan
+5. RunnableAgent(BaseSingleActionAgent).plan
 6. RunnableSequence._stream

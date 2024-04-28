@@ -195,23 +195,27 @@ if __name__ == '__main__':
     from langchain.chains.llm import LLMChain
     from langchain.agents import AgentExecutor,create_react_agent
     from apps.config import model_root
-    prompt = AgentPromptTemplate(
-            tools=[],
-            # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
-            # This includes the `intermediate_steps` variable because that is needed
-            input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
-        )
+    # prompt = AgentPromptTemplate(
+    #         tools=[],
+    #         # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
+    #         # This includes the `intermediate_steps` variable because that is needed
+    #         input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
+    #     )
     
-    tools = [search]
-    # tool_names = [tool.name for tool in tools]
-    model = Llama3Chat(model_path=os.path.join(model_root,"llama3"))
-    agent = create_react_agent(
-        llm=model,
-        tools=tools,
-        prompt=prompt
-    )
+    # tools = [search]
+    # # tool_names = [tool.name for tool in tools]
+    # model = Llama3Chat(model_path=os.path.join(model_root,"llama3"))
+    # agent = create_react_agent(
+    #     llm=model,
+    #     tools=tools,
+    #     prompt=prompt
+    # )
 
-    excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,handle_parsing_errors=True)
-    # pdb.set_trace()
-    excutor.invoke({"input": "微积分的分类，请使用中文回答"})
+    # excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,handle_parsing_errors=True)
+    # # pdb.set_trace()
+    # excutor.invoke({"input": "微积分的分类，请使用中文回答"})
+
+    model = Llama3Chat(None,"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")
+    out = model._api_call("微积分的分类，请使用中文回答")
+    print(out)
     
