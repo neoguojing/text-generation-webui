@@ -1,4 +1,6 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers.generation.logits_process import LogitsProcessorList
+from transformers import GenerationConfig
 import torch
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.messages import BaseMessage, HumanMessage,AIMessage,SystemMessage
@@ -14,6 +16,7 @@ top_package_path = os.path.abspath(os.path.join(current_dir, "../../"))
 
 # 将顶层package路径添加到sys.path
 sys.path.insert(0, top_package_path)
+from apps.generation_utils import StopWordsLogitsProcessor
 from apps.config import model_root
 from apps.base import Task,CustomerLLM
 from typing import (
@@ -32,6 +35,7 @@ from typing import (
     Mapping,
 )
 from pydantic import  Field
+import pdb
 
 class Llama3Chat(BaseChatModel,CustomerLLM):
     model_path: str = Field(None, alias='model_path')
@@ -91,19 +95,38 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> ChatResult:
+        # pdb.set_trace()
+        logits_processor = None
+        if stop is not None:
+            self.stop_words_ids.extend([self.tokenizer.encode(stop_) for stop_ in stop])
+            
+        if self.stop_words_ids is not None:
+            stop_words_logits_processor = StopWordsLogitsProcessor(
+                stop_words_ids=self.stop_words_ids,
+                eos_token_id=self.tokenizer.eos_token_id,
+            )
+
+            logits_processor = LogitsProcessorList([stop_words_logits_processor])
+      
+        generation_config = GenerationConfig(
+            max_new_tokens=self.max_window_size,
+            eos_token_id=self.react_stop_words_tokens,
+            pad_token_id=self.tokenizer.pad_token_id,
+            do_sample=True,
+            temperature=0.6,
+            top_p=0.9,
+        )
+        
         input = self._format_message(messages)
 
         input_ids =self.tokenize(input)
         # print("Llama3 input:",input)
         outputs = self.model.generate(
             input_ids,
-            max_new_tokens=self.max_window_size,
-            eos_token_id=self.react_stop_words_tokens,
-            do_sample=True,
-            temperature=0.6,
-            top_p=0.9,
-            # stop_words_ids=self.stop_words_ids,
+            generation_config = generation_config,
+            logits_processor=logits_processor,
         )
+
         response = outputs[0][input_ids.shape[-1]:]
         decode_resp = self.tokenizer.decode(response, skip_special_tokens=True)
     

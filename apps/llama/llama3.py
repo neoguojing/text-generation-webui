@@ -109,7 +109,7 @@ class Llama3(CustomerLLM):
                 add_generation_prompt=True,
                 return_tensors="pt"
             ).to(self.model.device)
-        print("Llama3 input_ids:",self.react_stop_words_tokens)
+        print("Llama3 stop:",self.react_stop_words_tokens)
         outputs = self.model.generate(
             input_ids,
             max_new_tokens=self.max_window_size,
