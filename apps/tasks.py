@@ -148,7 +148,7 @@ class Agent(Task):
             prompt=prompt
         )
 
-        self._executor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True)
+        self._executor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,handle_parsing_errors=True)
 
     @function_stats
     def run(self,input: Any=None,**kwargs):
@@ -158,14 +158,14 @@ class Agent(Task):
         print("Agent.run input---------------",input)
         output = self._executor.invoke({"input":input},**kwargs)
         print("Agent.run output----------------------:",output)
-        return output
+        return output["output"]
     
     async def arun(self,input: Any=None,**kwargs):
         return self.run(input,**kwargs)
     
     def init_model(self):
-        model = ModelFactory.get_model("qwen")
-        # model = ModelFactory.get_model("llama3")
+        # model = ModelFactory.get_model("qwen")
+        model = ModelFactory.get_model("llama3")
         return [model]
     
     def destroy(self):

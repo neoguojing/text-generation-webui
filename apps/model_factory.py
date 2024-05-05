@@ -19,6 +19,7 @@ from apps.translate.nllb import Translate
 from apps.multi_task.speech import SeamlessM4t,Whisper,XTTS
 from apps.image.sd import StableDiff,Image2Image
 from apps.llama.llama3 import Llama3
+from apps.llama.llama3_chat import Llama3Chat
 from apps.embedding.embedding import Embedding
 from apps.config import model_root
 from apps.base import CustomerLLM
@@ -27,6 +28,7 @@ import torch
 import threading
 import gc
 import weakref
+import pdb
 
 from langchain_core.messages import BaseMessage, HumanMessage,AIMessage,SystemMessage
 from langchain_community.chat_models import QianfanChatEndpoint
@@ -77,7 +79,7 @@ class LLamaLLM(CustomerLLM):
         """Get the identifying parameters."""
         return {"model_path": self.model_path}
 
-class QwenLLM(CustomerLLM,BaseChatModel):
+class QwenLLM(BaseChatModel,CustomerLLM):
     model_path: str = Field(None, alias='model_path')
     chat_format: Optional[str]   = 'chatml'
     max_window_size: Optional[int]   = 8192
@@ -108,6 +110,7 @@ class QwenLLM(CustomerLLM,BaseChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> ChatResult:
+        # pdb.set_trace()
         system,history,query = self._format_message(messages)
         print("qwen input-----------:",system,history,query)
         decode_resp = self._call(query,history=history,system=system)
@@ -162,7 +165,8 @@ class QwenLLM(CustomerLLM,BaseChatModel):
                 anwser = item.content
             if isinstance(item,HumanMessage):
                 query = item.content
-            
+            if isinstance(item,str):
+                query = item
             if anwser != "":
                 history.append([query,anwser])
                 anwser = ""
@@ -198,7 +202,8 @@ class ModelFactory:
                         instance = LLamaLLM(model_path=model_path)
                     elif model_name == "llama3": 
                         model_path = os.path.join(model_root,"llama3")
-                        instance = Llama3(model_path=model_path)
+                        # instance = Llama3(model_path=model_path)
+                        instance = Llama3Chat(model_path=model_path,token=None)
                     elif model_name == "translate": 
                         model_path = os.path.join(model_root,"nllb/")
                         instance = Translate(model_path=model_path)

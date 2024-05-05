@@ -39,14 +39,13 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
     stop = ["Observation:", "Observation:\n","\nObservation:"]
     react_stop_words_tokens: Optional[List[List[int]]]
     stop_words_ids: Optional[List[List[int]]]
-    token: Optional[str] = Field(default="")
     online: bool = False
+    token: str = ""
 
     def __init__(self, model_path: str,token: str,**kwargs):
         if model_path is None:
             return 
         
-        self.token = token
         super(Llama3Chat, self).__init__(llm=AutoModelForCausalLM.from_pretrained(
             model_path,
             torch_dtype=torch.bfloat16,
@@ -73,6 +72,7 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
         self.react_stop_words_tokens.append(self.tokenizer.eos_token_id)
         self.react_stop_words_tokens.append(self.tokenizer.convert_tokens_to_ids("<|eot_id|>"))
         print("<|eot_id|>",self.tokenizer.convert_tokens_to_ids("<|eot_id|>"))
+        print("stop_words_ids:",self.stop_words_ids)
         
 
     @property
@@ -185,7 +185,8 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
     def _api_call(self,input: List[BaseMessage]):
         import requests
         API_URL = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
-        headers = {"Authorization": f"Bearer {self.token}"}
+        headers = {"Authorization": f"Bearer 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"}
+        # headers = {"Authorization": f"Bearer {self.token}"}
 
         def query(payload):
             response = requests.post(API_URL, headers=headers, json=payload)
