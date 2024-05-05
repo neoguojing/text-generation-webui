@@ -118,7 +118,8 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
         )
         
         input = self._format_message(messages)
-
+        print("Llama3 input-----------:",input)
+        
         input_ids =self.tokenize(input)
         # print("Llama3 input:",input)
         outputs = self.model.generate(

@@ -1,4 +1,5 @@
 from langchain.tools import tool
+from langchain import hub
 from langchain.chains.llm import LLMChain
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
 from langchain_community.utilities import SerpAPIWrapper
@@ -118,12 +119,14 @@ class CustomAgent(LLMSingleActionAgent):
 class Agent(Task):
     
     def __init__(self):
-        prompt = QwenAgentPromptTemplate(
-            tools=tools,
-            # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
-            # This includes the `intermediate_steps` variable because that is needed
-            input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
-        )
+        # prompt = QwenAgentPromptTemplate(
+        #     tools=tools,
+        #     # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
+        #     # This includes the `intermediate_steps` variable because that is needed
+        #     input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
+        # )
+        prompt = hub.pull("hwchase17/react-chat")
+        print("agent prompt:",prompt)
         # from langchain.memory import ConversationBufferMemory
         # self.memory = ConversationBufferMemory(memory_key="history")
         
@@ -156,7 +159,7 @@ class Agent(Task):
             return ""
         
         print("Agent.run input---------------",input)
-        output = self._executor.invoke({"input":input},**kwargs)
+        output = self._executor.invoke({"input":input,"chat_history":""},**kwargs)
         print("Agent.run output----------------------:",output)
         return output["output"]
     
