@@ -47,28 +47,25 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
     token: str = ""
 
     def __init__(self, model_path: str,token: str,**kwargs):
-        if model_path is None:
-            return 
-        
-        super(Llama3Chat, self).__init__(llm=AutoModelForCausalLM.from_pretrained(
-            model_path,
-            torch_dtype=torch.bfloat16,
-            device_map="auto",
-        ))
-        self.model_path = model_path
-        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        # model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
-
-        # tokenizer = AutoTokenizer.from_pretrained(model_id)
-        # tokenizer.save_pretrained(os.path.join(model_root,"llama3"))
-        # model = AutoModelForCausalLM.from_pretrained(
-        #     model_id,
-        #     torch_dtype=torch.bfloat16,
-        #     device_map="auto",
-        # )
-
-        # model.save_pretrained(os.path.join(model_root,"llama3"))
-        
+        if model_path is not None:
+            super(Llama3Chat, self).__init__(llm=AutoModelForCausalLM.from_pretrained(
+                model_path,
+                torch_dtype=torch.bfloat16,
+                device_map="auto",
+            ))
+            self.model_path = model_path
+            self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+        else:
+            model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+            super(Llama3Chat, self).__init__(llm=AutoModelForCausalLM.from_pretrained(
+                model_id,
+                torch_dtype=torch.bfloat16,
+                device_map="auto",
+            ))
+            self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+            # tokenizer.save_pretrained(os.path.join(model_root,"llama3"))
+            # model.save_pretrained(os.path.join(model_root,"llama3"))
+            
        
         self.model.to(self.device)
         self.react_stop_words_tokens = []

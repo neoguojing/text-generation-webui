@@ -75,19 +75,25 @@ class StableDiff(CustomerLLM):
     #     # self.model.save_lora_weights(os.path.join(model_root,"stable-diffusion"),unet_lora_layers)
 
     def __init__(self, model_path: str=os.path.join(model_root,"sdxl-turbo"),**kwargs):
-        super(StableDiff, self).__init__(
-            llm=AutoPipelineForText2Image.from_pretrained(
-                os.path.join(model_root,"sdxl-turbo"), torch_dtype=torch.float16, variant="fp16"
-        ))
-        self.model_path = model_path
-        # self.model.to(self.device)
-        # 使用cpu和to('cuda')互斥，内存减小一半
-        self.model.enable_model_cpu_offload()
-
+        if model_path is not None:
+            super(StableDiff, self).__init__(
+                llm=AutoPipelineForText2Image.from_pretrained(
+                    os.path.join(model_root,"sdxl-turbo"), torch_dtype=torch.float16, variant="fp16"
+            ))
+            self.model_path = model_path
+            # self.model.to(self.device)
+            # 使用cpu和to('cuda')互斥，内存减小一半
+            self.model.enable_model_cpu_offload()
+        else:
+            super(StableDiff, self).__init__(
+                llm=AutoPipelineForText2Image.from_pretrained(
+                    "stabilityai/sdxl-turbo", torch_dtype=torch.float16, variant="fp16"
+            ))
+            self.model.enable_model_cpu_offload()
 
     @property
     def _llm_type(self) -> str:
-        return "stabilityai/stable-diffusion-xl-base-1.0"
+        return "stabilityai/sdxl-turbo"
     
     @property
     def model_name(self) -> str:
@@ -156,12 +162,18 @@ class Image2Image(CustomerLLM):
     save_image = True
 
     def __init__(self, model_path: str=os.path.join(model_root,"sdxl-turbo"),**kwargs):
-        super(Image2Image, self).__init__(
-            llm=AutoPipelineForImage2Image.from_pretrained(
-                os.path.join(model_root,"sdxl-turbo"), torch_dtype=torch.float16, variant="fp16"
-        ))
-        # self.model.save_pretrained(os.path.join(model_root,"sdxl-turbo"))
-        self.model_path = model_path
+        if model_path is not None:
+            super(Image2Image, self).__init__(
+                llm=AutoPipelineForImage2Image.from_pretrained(
+                    os.path.join(model_root,"sdxl-turbo"), torch_dtype=torch.float16, variant="fp16"
+            ))
+            # self.model.save_pretrained(os.path.join(model_root,"sdxl-turbo"))
+            self.model_path = model_path
+        else:
+            super(StableDiff, self).__init__(
+                llm=AutoPipelineForText2Image.from_pretrained(
+                    "stabilityai/sdxl-turbo", torch_dtype=torch.float16, variant="fp16"
+            ))
         # self.model.to(self.device)
         # 使用cpu和to('cuda')互斥，内存减小一半
         self.model.enable_model_cpu_offload()

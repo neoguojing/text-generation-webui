@@ -22,17 +22,22 @@ class Embedding(Embeddings,CustomerLLM):
     model_path: str = Field(None, alias='model_path')
 
     def __init__(self, model_path: str=os.path.join(model_root,"acge-large-zh"),**kwargs):
-        super(Embedding, self).__init__(
-            llm=AutoModel.from_pretrained(
-                os.path.join(model_root,"acge-large-zh")
-        ))
-        # super(Embedding, self).__init__(
-        #     llm=AutoModel.from_pretrained('aspire/acge-large-zh'))
-        # self.tokenizer = AutoTokenizer.from_pretrained('aspire/acge-large-zh')
-        # self.tokenizer.save_pretrained(os.path.join(model_root,"acge-large-zh"))
-        # self.model.save_pretrained(os.path.join(model_root,"acge-large-zh"))
-        self.model_path = model_path
-        self.tokenizer = AutoTokenizer.from_pretrained(os.path.join(model_root,"acge-large-zh"))
+        if model_path is not None:
+            super(Embedding, self).__init__(
+                llm=AutoModel.from_pretrained(
+                    os.path.join(model_root,"acge-large-zh")
+            ))
+            # super(Embedding, self).__init__(
+            #     llm=AutoModel.from_pretrained('aspire/acge-large-zh'))
+            # self.tokenizer = AutoTokenizer.from_pretrained('aspire/acge-large-zh')
+            # self.tokenizer.save_pretrained(os.path.join(model_root,"acge-large-zh"))
+            # self.model.save_pretrained(os.path.join(model_root,"acge-large-zh"))
+            self.model_path = model_path
+            self.tokenizer = AutoTokenizer.from_pretrained(os.path.join(model_root,"acge-large-zh"))
+        else:
+            super(Embedding, self).__init__(
+                 llm=AutoModel.from_pretrained('aspire/acge-large-zh'))
+            self.tokenizer = AutoTokenizer.from_pretrained('aspire/acge-large-zh')
         # self.model.to(self.device)
        
     @property

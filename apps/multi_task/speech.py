@@ -124,19 +124,22 @@ class Whisper(CustomerLLM):
     pipeline: Any  = None
 
     def __init__(self, model_path: str = os.path.join(model_root,"whisper"),**kwargs):
-        super(Whisper, self).__init__(llm=AutoModelForSpeechSeq2Seq.from_pretrained(
-            model_path, torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32, 
-            low_cpu_mem_usage=True, use_safetensors=True,use_flash_attention_2=True
-        ))
-        self.model_path = model_path
-        # model_id = "openai/whisper-large-v3"
-        # model = AutoModelForSpeechSeq2Seq.from_pretrained(
-        #     "openai/whisper-large-v3", torch_dtype=torch.float16, low_cpu_mem_usage=True, use_safetensors=True
-        # )
-        # self.processor = AutoProcessor.from_pretrained(model_id)
-        # self.processor.save_pretrained(os.path.join(model_root,"whisper"))
-        # model.save_pretrained(os.path.join(model_root,"whisper"))
-        self.processor = AutoProcessor.from_pretrained(model_path)
+        if model_path is not None:
+            super(Whisper, self).__init__(llm=AutoModelForSpeechSeq2Seq.from_pretrained(
+                model_path, torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32, 
+                low_cpu_mem_usage=True, use_safetensors=True,use_flash_attention_2=True
+            ))
+            self.model_path = model_path
+            self.processor = AutoProcessor.from_pretrained(model_path)
+        else:
+            model_id = "openai/whisper-large-v3"
+            super(Whisper, self).__init__(llm=AutoModelForSpeechSeq2Seq.from_pretrained(
+                "openai/whisper-large-v3", torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32, 
+                low_cpu_mem_usage=True, use_safetensors=True,use_flash_attention_2=True
+            ))
+            self.processor = AutoProcessor.from_pretrained(model_id)
+            # self.processor.save_pretrained(os.path.join(model_root,"whisper"))
+            # model.save_pretrained(os.path.join(model_root,"whisper"))
         self.model.to(self.device)
         print(f"Whisper:device ={self.device},sample_rate={self.sample_rate}")
         self.pipeline = pipeline(
