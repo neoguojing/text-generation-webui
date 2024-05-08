@@ -100,7 +100,7 @@ b. 通过input_keys，校验是否缺少输入参数
 c. 调用_call函数,获取输出
 d. 组装输出，支持输出input和output，也支持单独输出output，返回格式Dict[str, Any]
 e: 调用on_chain_end
-3. AgentExecutor._call
+3. AgentExecutor._call：最终返回是Dict[str, Any]
 a._should_continue: 通过max_execution_time或max_iterations 控制执行次数
 循环：
     b. _take_next_step->_consume_next_step->_aiter_next_step：最终返回Union[AgentFinish, List[Tuple[AgentAction, str]]]
@@ -108,11 +108,16 @@ a._should_continue: 通过max_execution_time或max_iterations 控制执行次数
     d. 否则保存中间结果，中间结果为一个的情况下，调用_get_tool_return来判断tool是否支持直接返回
     e. self.agent.return_stopped_response:处理强制退出的返回 force: 因为超时或者超过循环次数  generate：从intermediate_steps中组织输入和输出，交给大模型做最后总结，有outputparser则调用
 4. 循环执行：AgentExecutor._take_next_step
-5. RunnableAgent(BaseSingleActionAgent).plan
+5. RunnableAgent(BaseSingleActionAgent).plan：返回action或者finish
+   a 调用self.runnable.invoke 或者self.runnable.stream
 6. RunnableSequence._stream
+7. RunnableSequence.transform
+8. _transform_stream_with_config
 
 
 _consume_next_step： 负责过滤agent的所有结果，若最后一个是finish则只返回一个结果，否则将AgentStep 分解为action和observation
+_iter_next_step： 裁剪intermediate_steps，调用agent.plan，finish则返回，action遍历返回，函数则调用_perform_agent_action
+_perform_agent_action：输入action调用tool.run ,返回AgentStep
 
 AgentAction.message ： 将action转换为AIMessage
 AgentExecutor 继承了 Chain
@@ -120,8 +125,8 @@ input_keys 函数的实现：
 1. LLMChain：  self.prompt.input_variables
 2.Agent:list(set(self.llm_chain.input_keys) - {"agent_scratchpad"})
 
-BaseTool： return_direct 控制tool的结果是否直接返回
-
+BaseTool： return_direct 控制tool的结果是否直接返回；tool继承该函数并实现run接口
+handle_parsing_errors： 可以是bool 函数或者字符串
 class AgentStep(Serializable):
     """The result of running an AgentAction."""
 
@@ -129,3 +134,19 @@ class AgentStep(Serializable):
     """The AgentAction that was executed."""
     observation: Any
     """The result of the AgentAction."""
+
+class AgentAction(Serializable):
+    """A full description of an action for an ActionAgent to execute."""
+
+    tool: str
+    """The name of the Tool to execute."""
+    tool_input: Union[str, dict]
+    """The input to pass in to the Tool."""
+    log: str
+
+class AgentFinish(Serializable):
+    """The final return value of an ActionAgent."""
+
+    return_values: dict
+    """Dictionary of return values."""
+    log: str

@@ -8,6 +8,7 @@ from langchain_core.language_models import BaseChatModel, SimpleChatModel
 from langchain_core.messages import AIMessageChunk, BaseMessage, HumanMessage,AIMessage,SystemMessage
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult,LLMResult
 from langchain_core.runnables import run_in_executor
+from langchain import hub
 import pdb
 
 
@@ -195,26 +196,39 @@ if __name__ == '__main__':
     from langchain.chains.llm import LLMChain
     from langchain.agents import AgentExecutor,create_react_agent
     from apps.config import model_root
-    prompt = AgentPromptTemplate(
-            tools=[],
-            # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
-            # This includes the `intermediate_steps` variable because that is needed
-            input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
-        )
-    
+    # prompt = AgentPromptTemplate(
+    #         tools=[],
+    #         # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
+    #         # This includes the `intermediate_steps` variable because that is needed
+    #         input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
+    #     )
+    prompt = hub.pull("hwchase17/react-chat")
+    from langchain_community.chat_message_histories import ChatMessageHistory
+    from langchain_core.runnables.history import RunnableWithMessageHistory
+    from apps.parser import QwenAgentOutputParser
+    message_history = ChatMessageHistory()
     tools = [search]
     # tool_names = [tool.name for tool in tools]
     model = Llama3Chat(model_path=os.path.join(model_root,"llama3"),token=None)
+    # output_parser = QwenAgentOutputParser()
     agent = create_react_agent(
         llm=model,
         tools=tools,
-        prompt=prompt
+        prompt=prompt,
     )
 
-    excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,handle_parsing_errors=True)
-    # pdb.set_trace()
-    excutor.invoke({"input": "今天上海的天气"})
-
+    excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,handle_parsing_errors=True,stream_runnable=False)
+    # agent_with_chat_history = RunnableWithMessageHistory(
+    #     excutor,
+    #     # This is needed because in most real world scenarios, a session id is needed
+    #     # It isn't really used here because we are using a simple in memory ChatMessageHistory
+    #     lambda session_id: message_history,
+    #     input_messages_key="input",
+    #     history_messages_key="chat_history",
+    # )
+    pdb.set_trace()
+    excutor.invoke({"input": "今天上海的天气,中文","chat_history":[]})
+    # agent_with_chat_history.invoke({"input": "今天上海的天气"},config={"configurable": {"session_id": "<foo>"}},)
     # model = Llama3Chat(None,"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")
     # out = model._api_call("微积分的分类，请使用中文回答")
     # print(out)

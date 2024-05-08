@@ -108,7 +108,7 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
         generation_config = GenerationConfig(
             max_new_tokens=self.max_window_size,
             eos_token_id=self.react_stop_words_tokens,
-            pad_token_id=self.tokenizer.pad_token_id,
+            pad_token_id=self.tokenizer.eos_token_id,
             do_sample=True,
             temperature=0.6,
             top_p=0.9,

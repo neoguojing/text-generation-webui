@@ -194,7 +194,8 @@ class ImageGenTask(Task):
         image_path = kwargs.pop("image_path","")
         image_obj = kwargs.pop("image_obj",None)
 
-        translate = ModelFactory.get_model("qwen")
+        # translate = ModelFactory.get_model("qwen")
+        translate = ModelFactory.get_model("llama3")
         en_prompt = translate_prompt(input)
         input = translate.predict(en_prompt)
         if image_path != "" or image_obj is not None:
