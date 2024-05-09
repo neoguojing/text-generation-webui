@@ -110,9 +110,20 @@ a._should_continue: 通过max_execution_time或max_iterations 控制执行次数
 4. 循环执行：AgentExecutor._take_next_step
 5. RunnableAgent(BaseSingleActionAgent).plan：返回action或者finish
    a 调用self.runnable.invoke 或者self.runnable.stream
-6. RunnableSequence._stream
-7. RunnableSequence.transform
-8. _transform_stream_with_config
+6. RunnableSequence._stream 或者 RunnableSequence.invoke : 执行agent调用链，以下步骤均属于该调用链，返回AgentAction
+7. RunnablePassthrough.invoke:
+8. BasePromptTemplate.invoke : 负责将输入转换为StringPromptValue等
+9. RunnableBindingBase.invoke：调用模型的地方
+class RunnableBindingBase(RunnableSerializable[Input, Output]):
+    bound: Runnable[Input, Output] 该参数即自定义的llm
+10. BaseChatModel.invoke:返回AIMessage
+11. BaseChatModel.generate_prompt:将[StringPromptValue] 转换为[HumanMessage],返回LLMResult
+12. BaseChatModel.generate:遍历messages，依次调用_generate_with_cache,
+13. BaseChatModel._generate_with_cache: 实现一个缓存，缓存相同的请求结果，调用自定义llm的_generate,返回ChatResult
+14. Llama3Chat._generate
+15. BaseOutputParser.invoke:执行结果解析，返回AgentAction
+<!-- 7. RunnableSequence.transform
+1. _transform_stream_with_config -->
 
 
 _consume_next_step： 负责过滤agent的所有结果，若最后一个是finish则只返回一个结果，否则将AgentStep 分解为action和observation
@@ -150,3 +161,24 @@ class AgentFinish(Serializable):
     return_values: dict
     """Dictionary of return values."""
     log: str
+
+class RunnableSequence(RunnableSerializable[Input, Output]):
+    first: Runnable[Input, Any]
+    """The first runnable in the sequence."""
+    middle: List[Runnable[Any, Any]] = Field(default_factory=list)
+    """The middle runnables in the sequence."""
+    last: Runnable[Any, Output]
+    """The last runnable in the sequence."""
+
+class ChatGeneration(Generation):
+    """A single chat generation output."""
+
+    text: str = ""
+    """*SHOULD NOT BE SET DIRECTLY* The text contents of the output message."""
+    message: BaseMessage
+    """The message output by the chat model."""
+
+
+
+大模型返回值有问题：多了Observation
+今天上海的天气\nObservation'
