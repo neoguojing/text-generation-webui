@@ -196,13 +196,13 @@ if __name__ == '__main__':
     from langchain.chains.llm import LLMChain
     from langchain.agents import AgentExecutor,create_react_agent
     from apps.config import model_root
-    # prompt = AgentPromptTemplate(
-    #         tools=[],
-    #         # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
-    #         # This includes the `intermediate_steps` variable because that is needed
-    #         input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
-    #     )
-    prompt = hub.pull("hwchase17/react-chat")
+    prompt = AgentPromptTemplate(
+            tools=[],
+            # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
+            # This includes the `intermediate_steps` variable because that is needed
+            input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
+        )
+    # prompt = hub.pull("hwchase17/react-chat")
     from langchain_community.chat_message_histories import ChatMessageHistory
     from langchain_core.runnables.history import RunnableWithMessageHistory
     from apps.parser import QwenAgentOutputParser
