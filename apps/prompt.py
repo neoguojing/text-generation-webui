@@ -141,7 +141,7 @@ class QwenAgentPromptTemplate(BaseChatPromptTemplate):
                 HumanMessage(content=formatted)
             ]
 
-agent_template = """Assistant is a large language model trained by OpenAI.
+sys_agent_template = """Assistant is a large language model trained by OpenAI.
 
 Assistant is designed to be able to assist with a wide range of tasks, 
 from answering simple questions to providing in-depth explanations and discussions on a wide range of topics.
@@ -186,15 +186,12 @@ Begin!
 Previous conversation history:
 {chat_history}
 
-New input: {input}
-{agent_scratchpad}
-
 """
 
 class AgentPromptTemplate(BaseChatPromptTemplate):
     
     # The template to use
-    template: str = template
+    sys_template: str = sys_agent_template
     # The list of tools available
     tools: List[Tool]
 
@@ -216,11 +213,11 @@ class AgentPromptTemplate(BaseChatPromptTemplate):
         kwargs["tools"] = "\n".join([f"{tool.name}: {tool.description}" for tool in self.tools])
         # Create a list of tool names for the tools provided
         kwargs["tool_names"] = ", ".join([tool.name for tool in self.tools])
-        formatted = self.template.format(**kwargs)
+        formatted = self.sys_template.format(**kwargs)
         return [
                 SystemMessage(content=formatted),
+                AIMessage(content=kwargs["agent_scratchpad"]) if "agent_scratchpad" in kwargs else None,
                 HumanMessage(content=kwargs["input"]),
-                AIMessage(content=kwargs["agent_scratchpad"])
             ]
       
 def translate_prompt(input_text):
