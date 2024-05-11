@@ -217,7 +217,8 @@ if __name__ == '__main__':
         prompt=prompt,
     )
 
-    excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,handle_parsing_errors=True,stream_runnable=False)
+    excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,
+                                                 handle_parsing_errors=True,stream_runnable=False)
     # agent_with_chat_history = RunnableWithMessageHistory(
     #     excutor,
     #     # This is needed because in most real world scenarios, a session id is needed

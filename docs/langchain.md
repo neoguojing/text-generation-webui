@@ -20,7 +20,7 @@
    - 1. **RunnableAgent(BaseSingleActionAgent).plan**： 输出:Union[AgentAction, AgentFinish]
       - a 调用self.runnable.invoke 或者self.runnable.stream
    - 2. **RunnableSequence._stream 或者 RunnableSequence.invoke** : 执行agent调用链，以下步骤均属于该调用链，返回AgentAction
-     - 3. **RunnablePassthrough.invoke**:
+     - 3. **RunnablePassthrough.invoke**: 将intermediate_steps 转换为 agent_scratchpad
      - 4. **BasePromptTemplate.invoke** : 输入：？？，输出：PromptValue (StringPromptValue,ChatPromptValue)
        - BasePromptTemplate._format_prompt_with_error_handling
        -  BaseChatPromptTemplate.format_prompt
@@ -40,10 +40,9 @@
        - 12. **BaseOutputParser.parse_result**
        - 13. **ReActSingleInputOutputParser.parse**：输入：str，输出： Union[AgentAction, AgentFinish]
 ## 重要函数说明
-    - _consume_next_step： 负责过滤agent的所有结果，若最后一个是finish则只返回一个结果，否则将AgentStep 分解为action和observation
-    - _iter_next_step： 裁剪intermediate_steps，调用agent.plan，finish则返回，action遍历返回，函数则调用_perform_agent_action
-    - _perform_agent_action：输入action调用tool.run ,返回AgentStep
-
+    - AgentExecutor._consume_next_step： 负责过滤agent的所有结果，若最后一个是finish则只返回一个结果，否则将AgentStep 分解为action和observation
+    - AgentExecutor._iter_next_step： 裁剪intermediate_steps，调用agent.plan，finish则返回，action遍历返回，函数则调用_perform_agent_action
+    - AgentExecutor._perform_agent_action：输入action调用tool.run ,返回AgentStep
     - AgentAction.message ： 将action转换为AIMessage
     - AgentExecutor 继承了 Chain
     - input_keys 函数的实现：
@@ -55,7 +54,19 @@
 
 ## 重要概念：
 - intermediate_steps: List[Tuple[AgentAction, str]]:
-- 
+  - a 在AgentExecutor._call中建立一个空的intermediate_steps
+  - b RunnableAgent(BaseSingleActionAgent).plan中将intermediate_steps放入input，作为一个入参
+  - c 在在AgentExecutor._call中，将以上步骤中输出的AgentAction和str放到a步骤的数组中
+- agent_scratchpad： 由intermediate_steps生成的字符串
+  ```
+  for action, observation in intermediate_steps:
+            # print("action:",action)
+            # print("observation:",observation)
+            thoughts += action.log
+            thoughts += f"\nObservation: {observation}\nThought: "
+        # Set the agent_scratchpad variable to that value
+  kwargs["agent_scratchpad"] = thoughts
+  ```
 ## 重要class
 ```
     class LLMResult(BaseModel):

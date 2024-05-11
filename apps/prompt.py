@@ -200,7 +200,7 @@ class AgentPromptTemplate(BaseChatPromptTemplate):
         # Format them in a particular way
         intermediate_steps = kwargs.pop("intermediate_steps")
 
-        # print("intermediate_steps:",intermediate_steps)
+        print("intermediate_steps:",intermediate_steps)
         thoughts = ""
         for action, observation in intermediate_steps:
             # print("action:",action)

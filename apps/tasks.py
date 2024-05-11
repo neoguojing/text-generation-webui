@@ -151,7 +151,8 @@ class Agent(Task):
             prompt=prompt
         )
 
-        self._executor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,handle_parsing_errors=True)
+        self._executor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,
+                                                            handle_parsing_errors=True,stream_runnable=False)
 
     @function_stats
     def run(self,input: Any=None,**kwargs):
