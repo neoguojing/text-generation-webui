@@ -40,7 +40,7 @@ import pdb
 class Llama3Chat(BaseChatModel,CustomerLLM):
     model_path: str = Field(None, alias='model_path')
     max_window_size: Optional[int]   = 8192
-    stop = ["Observation:", "Observation:\n","\nObservation:"]
+    stop = ["Observation:", "Observation:\n","\nObservation:","Observation"]
     react_stop_words_tokens: Optional[List[List[int]]]
     stop_words_ids: Optional[List[List[int]]]
     online: bool = False
@@ -110,6 +110,7 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
             eos_token_id=self.react_stop_words_tokens,
             pad_token_id=self.tokenizer.eos_token_id,
             do_sample=True,
+            num_beams=1,
             temperature=0.6,
             top_p=0.9,
         )
@@ -128,7 +129,7 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
         response = outputs[0][input_ids.shape[-1]:]
         decode_resp = self.tokenizer.decode(response, skip_special_tokens=True)
     
-        print("Llama3 output-----------:",decode_resp)
+        # print("Llama3 output-----------:",decode_resp)
         message = AIMessage(
             content=decode_resp,
             additional_kwargs={},  # Used to add additional payload (e.g., function calling request)

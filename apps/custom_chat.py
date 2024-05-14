@@ -210,11 +210,12 @@ if __name__ == '__main__':
     tools = [search]
     # tool_names = [tool.name for tool in tools]
     model = Llama3Chat(model_path=os.path.join(model_root,"llama3"),token=None)
-    # output_parser = QwenAgentOutputParser()
+    output_parser = QwenAgentOutputParser()
     agent = create_react_agent(
         llm=model,
         tools=tools,
         prompt=prompt,
+        output_parser=output_parser,
     )
 
     excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,

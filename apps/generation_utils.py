@@ -419,6 +419,8 @@ class StopWordsLogitsProcessor(LogitsProcessor):
         self, input_ids: torch.LongTensor, scores: torch.FloatTensor
     ) -> torch.FloatTensor:
         stopped_samples = self._calc_stopped_samples(input_ids)
+        import pdb
+        # pdb.set_trace()
         for i, should_stop in enumerate(stopped_samples):
             if should_stop:
                 scores[i, self.eos_token_id] = float(2**15)

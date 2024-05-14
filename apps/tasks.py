@@ -24,7 +24,7 @@ sys.path.insert(0, top_package_path)
 import threading
 from apps.base import Task,function_stats
 from apps.model_factory import ModelFactory
-from apps.prompt import QwenAgentPromptTemplate,translate_prompt
+from apps.prompt import QwenAgentPromptTemplate,translate_prompt,AgentPromptTemplate
 from apps.parser import QwenAgentOutputParser
 from .retriever import Retriever
 
@@ -119,13 +119,21 @@ class CustomAgent(LLMSingleActionAgent):
 class Agent(Task):
     
     def __init__(self):
-        # prompt = QwenAgentPromptTemplate(
-        #     tools=tools,
+        prompt = QwenAgentPromptTemplate(
+            tools=tools,
+            # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
+            # This includes the `intermediate_steps` variable because that is needed
+            input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
+        )
+        # prompt = hub.pull("hwchase17/react-chat")
+
+        # prompt = AgentPromptTemplate(
+        #     tools=[],
         #     # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
         #     # This includes the `intermediate_steps` variable because that is needed
         #     input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
         # )
-        prompt = hub.pull("hwchase17/react-chat")
+
         print("agent prompt:",prompt)
         # from langchain.memory import ConversationBufferMemory
         # self.memory = ConversationBufferMemory(memory_key="history")
@@ -148,7 +156,8 @@ class Agent(Task):
         agent = create_react_agent(
             llm=self.excurtor[0],
             tools=tools,
-            prompt=prompt
+            prompt=prompt,
+            output_parser=output_parser,
         )
 
         self._executor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,
@@ -159,9 +168,9 @@ class Agent(Task):
         if input is None or input == "":
             return ""
         
-        print("Agent.run input---------------",input)
+        # print("Agent.run input---------------",input)
         output = self._executor.invoke({"input":input,"chat_history":""},**kwargs)
-        print("Agent.run output----------------------:",output)
+        # print("Agent.run output----------------------:",output)
         return output["output"]
     
     async def arun(self,input: Any=None,**kwargs):
