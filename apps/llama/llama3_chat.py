@@ -104,7 +104,10 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
             )
 
             logits_processor = LogitsProcessorList([stop_words_logits_processor])
-      
+
+        from transformers import StoppingCriteriaList,StopStringCriteria
+        stopping_criteria = StoppingCriteriaList([StopStringCriteria(stops = [[21943], [5657]])])
+
         generation_config = GenerationConfig(
             max_new_tokens=self.max_window_size,
             eos_token_id=self.react_stop_words_tokens,
@@ -123,7 +126,9 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
         outputs = self.model.generate(
             input_ids,
             generation_config = generation_config,
-            logits_processor=logits_processor,
+            # logits_processor=logits_processor,
+            stop_strings=self.stop, 
+            tokenizer=self.tokenizer
         )
 
         response = outputs[0][input_ids.shape[-1]:]
