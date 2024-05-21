@@ -486,3 +486,253 @@ def top_k_logits(logits, top_k=0, top_p=0.0, filter_value=-float("Inf")):
 def switch(val1, val2, boolean):
     boolean = boolean.type_as(val1)
     return (1 - boolean) * val1 + boolean * val2
+
+
+from transformers import StoppingCriteria,PreTrainedTokenizerBase,add_start_docstrings
+from collections import OrderedDict
+from typing import Dict, List, Tuple, Union
+STOP_STRING_EMBEDDING_CACHE = OrderedDict()
+
+STOPPING_CRITERIA_INPUTS_DOCSTRING = r"""
+    Args:
+        input_ids (`torch.LongTensor` of shape `(batch_size, sequence_length)`):
+            Indices of input sequence tokens in the vocabulary.
+
+            Indices can be obtained using [`AutoTokenizer`]. See [`PreTrainedTokenizer.encode`] and
+            [`PreTrainedTokenizer.__call__`] for details.
+
+            [What are input IDs?](../glossary#input-ids)
+        scores (`torch.FloatTensor` of shape `(batch_size, config.vocab_size)`):
+            Prediction scores of a language modeling head. These can be scores for each vocabulary token before SoftMax
+            or scores for each vocabulary token after SoftMax. If this stopping criteria depends on the `scores` input,
+            make sure you pass `return_dict_in_generate=True, output_scores=True` to `generate`.
+        kwargs (`Dict[str, Any]`, *optional*):
+            Additional stopping criteria specific kwargs.
+
+    Return:
+        `torch.BoolTensor`. (`torch.BoolTensor` of shape `(batch_size, 1)`), where `True` indicates we stop generation
+            for a particular row, `True` indicates we should continue.
+
+"""
+
+class StopStringCriteria(StoppingCriteria):
+    """
+    ```python
+    >>> from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    >>> tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2")
+    >>> model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2")
+    >>> inputs = tokenizer("The biggest states in the USA by land area:", return_tensors="pt")
+
+    >>> gen_out = model.generate(**inputs)
+    >>> print(tokenizer.batch_decode(gen_out, skip_special_tokens=True)[0])
+    The biggest states in the USA by land area:
+    - Alaska
+    - Texas
+    - California
+
+    >>> # Passing one or more stop strings will halt generation after those strings are emitted
+    >>> # Note that generating with stop strings requires you to pass the tokenizer too
+    >>> gen_out = model.generate(**inputs, stop_strings=["Texas"], tokenizer=tokenizer)
+    >>> print(tokenizer.batch_decode(gen_out, skip_special_tokens=True)[0])
+    The biggest states in the USA by land area:
+    - Alaska
+    - Texas
+    ```
+    """
+
+    def __init__(self, tokenizer: PreTrainedTokenizerBase, stop_strings: Union[str, List[str]]):
+        if isinstance(stop_strings, str):
+            stop_strings = [stop_strings]
+        self.stop_strings: Tuple[str, ...] = tuple(stop_strings)
+        vocab = tokenizer.get_vocab()
+        token_list, token_indices = tuple(vocab.keys()), tuple(vocab.values())
+        self.embedding_vec, self.max_valid_positions, self.max_valid_end_lens = self.clean_and_embed_tokens_with_cache(
+            token_list, token_indices, self.stop_strings, tokenizer
+        )
+
+        self.maximum_token_len = max([len(stop_string) for stop_string in self.stop_strings])
+        self.num_stop_strings = len(self.stop_strings)
+        self.target_lens = torch.tensor([len(stop_string) for stop_string in stop_strings], dtype=torch.int32)
+
+    def clean_and_embed_tokens_with_cache(self, token_list, token_indices, stop_strings, tokenizer):
+        # We don't use the tokenizer in the cache key, because I don't trust it to have well-behaved equality
+        if (token_list, token_indices, stop_strings) in STOP_STRING_EMBEDDING_CACHE:
+            embedding_vec, max_valid_positions, max_valid_end_lens = STOP_STRING_EMBEDDING_CACHE[
+                (token_list, token_indices, self.stop_strings)
+            ]
+            STOP_STRING_EMBEDDING_CACHE.move_to_end((token_list, token_indices, stop_strings))
+        else:
+            clean_token_list, clean_token_indices = self.clean_tokenizer_vocab(tokenizer)
+            embedding_vec, max_valid_positions, max_valid_end_lens = self._stop_string_create_embedding_vec(
+                clean_token_list, clean_token_indices, stop_strings
+            )
+            STOP_STRING_EMBEDDING_CACHE[(token_list, token_indices, stop_strings)] = (
+                embedding_vec,
+                max_valid_positions,
+                max_valid_end_lens,
+            )
+            if len(STOP_STRING_EMBEDDING_CACHE) > 8:
+                STOP_STRING_EMBEDDING_CACHE.popitem(last=False)  # Pop from the start, the least recently used item
+        return embedding_vec, max_valid_positions, max_valid_end_lens
+
+    @staticmethod
+    def clean_tokenizer_vocab(tokenizer, static_prefix="abcdef"):
+        """
+        This method turns a tokenizer vocab into a "clean" vocab where each token represents the actual string
+        it will yield, without any special prefixes like "##" or "Ġ". This is trickier than it looks - the method
+        tokenizer.convert_tokens_to_string() does not always return the correct string because of issues with prefix
+        space addition/removal. To work around this, we add a static prefix to the start of the token, then remove
+        it (and any prefix that may have been introduced with it) after calling convert_tokens_to_string().
+        """
+        vocab = tokenizer.get_vocab()
+        clean_token_list = []
+        clean_token_indices = []
+        sentence_base = tokenizer(static_prefix, add_special_tokens=False)["input_ids"]
+        tokens_base = [tokenizer._convert_id_to_token(tok) for tok in sentence_base]
+        for token, token_idx in vocab.items():
+            token_string = tokenizer.convert_tokens_to_string(tokens_base + [token])
+            token_string = token_string[token_string.index(static_prefix) + len(static_prefix) :]
+            clean_token_list.append(token_string)
+            clean_token_indices.append(token_idx)
+        return tuple(clean_token_list), tuple(clean_token_indices)
+
+    @staticmethod
+    def _stop_string_get_matching_positions(
+        token_list, token_indices, stop_strings
+    ) -> Tuple[Dict[str, Dict[str, List[int]]], Dict[str, Dict[str, List[int]]]]:
+        """This function preprocesses stop strings and the tokenizer vocabulary to determine where tokens can
+        validly appear in the stop strings. For each token, it computes a list of positions in the stop string where the
+        token appears, as well as a list of the possible "end overlaps" for that token - that is, the number of characters
+        from the end of the stop string that overlap with the start of the token, which can have more than one value.
+
+        The reason for computing these may seem a bit cryptic - please see the docstring for StopStringCriteria for a full
+        explanation of what these values are for!"""
+
+        token_valid_positions = {}
+        token_end_overlaps = {}
+        for stop_string in stop_strings:
+            reversed_stop_string = stop_string[::-1]
+            token_valid_positions[stop_string] = {}
+            token_end_overlaps[stop_string] = {}
+            for token, tok_idx in zip(token_list, token_indices):
+                reversed_token = token[::-1]
+                matching_positions = []
+                possible_end_lengths = []
+                for i in range(1 - len(token), len(stop_string)):
+                    if i < 0:
+                        tok = reversed_token[-i:]
+                        i = 0
+                    else:
+                        tok = reversed_token
+                    stop = reversed_stop_string[i : i + len(tok)]
+                    if tok.startswith(stop):
+                        if i == 0:
+                            possible_end_lengths.append(min(len(tok), len(stop)))
+                        else:
+                            matching_positions.append(i)
+
+                if matching_positions:
+                    token_valid_positions[stop_string][tok_idx] = matching_positions
+                if possible_end_lengths:
+                    token_end_overlaps[stop_string][tok_idx] = possible_end_lengths
+        return token_valid_positions, token_end_overlaps
+
+    @staticmethod
+    def _stop_string_create_embedding_vec(token_list, token_indices, stop_strings) -> Dict[str, torch.tensor]:
+        """This function precomputes everything needed for the run-time checks in StopStringCriteria, and packs
+        them into an embedding tensor that can be accessed with pure tensor operations. For the specifics of the values
+        that are precomputed and what they are used for, please refer to the StopStringCriteria docstring!"""
+        token_valid_positions, token_end_overlaps = StopStringCriteria._stop_string_get_matching_positions(
+            token_list, token_indices, stop_strings
+        )
+
+        max_valid_positions = max(
+            len(val) for positions in token_valid_positions.values() for val in positions.values()
+        )
+        max_valid_end_lens = max(len(val) for positions in token_end_overlaps.values() for val in positions.values())
+        vec_size = len(stop_strings) * (max_valid_positions + max_valid_end_lens) + 1
+        gather_vec = np.full((len(token_list), vec_size), dtype=np.int32, fill_value=-1)
+
+        for i, stop_string in enumerate(stop_strings):
+            positions = token_valid_positions[stop_string]
+            end_lens = token_end_overlaps[stop_string]
+
+            # Since this is lots of very small assignments of lists, we build it with numpy rather
+            # than torch for speed + simplicity, then convert to torch at the end
+            for token_idx, valid_positions in positions.items():
+                gather_vec[
+                    token_idx, max_valid_positions * i : max_valid_positions * i + len(valid_positions)
+                ] = valid_positions
+            for token_idx, possible_end_lens in end_lens.items():
+                gather_vec[
+                    token_idx,
+                    max_valid_positions * len(stop_strings) + max_valid_end_lens * i : max_valid_positions
+                    * len(stop_strings)
+                    + max_valid_end_lens * i
+                    + len(possible_end_lens),
+                ] = possible_end_lens
+            for token, token_idx in zip(token_list, token_indices):
+                gather_vec[token_idx, -1] = len(token)
+
+        gather_vec = torch.tensor(gather_vec, dtype=torch.int32)
+
+        return gather_vec, max_valid_positions, max_valid_end_lens
+
+    @add_start_docstrings(STOPPING_CRITERIA_INPUTS_DOCSTRING)
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> torch.Tensor:
+        self.embedding_vec = self.embedding_vec.to(input_ids.device)
+        self.target_lens = self.target_lens.to(input_ids.device)
+        # The maximum length we need to consider is 1 token per character. Note that input_ids can also be
+        # *shorter* than the global max, and the code below should be ready for that
+        input_ids = input_ids[:, -self.maximum_token_len :]
+
+        # Flip input_ids because we're only matching strings at the end of the generated sequence
+        flipped_ids = torch.flip(input_ids, (1,))
+
+        # Size of the vector of positions a single token can match
+        max_valid_positions = self.max_valid_positions
+
+        # The embedding vec contains the valid positions, end_lengths and total lengths for each token
+        embedded = F.embedding(flipped_ids, self.embedding_vec)
+
+        # Now we split the embedding vector. valid_positions is the positions in the stop string the token can fit
+        valid_positions = embedded[:, 1:, : max_valid_positions * self.num_stop_strings].unflatten(
+            -1, (self.num_stop_strings, -1)
+        )
+        # end_lengths is the number of characters from the string, counting from the end, that the token
+        # contains. It can have multiple values if the same token can overlap different end lengths
+        end_lengths = embedded[:, :1, max_valid_positions * self.num_stop_strings : -1].unflatten(
+            -1, (self.num_stop_strings, -1)
+        )
+        # Lengths is the total length of each token. Unlike the others, it always has a single value
+        lengths = embedded[:, 1:, None, -1:]  # Insert a dummy dimension for stop_strings even though lengths are const
+
+        # Concatenate lengths onto each possible end_lengths value
+        lengths = lengths.expand((-1, -1, end_lengths.shape[-2], end_lengths.shape[-1]))
+        lengths_with_ends = torch.cat([end_lengths, lengths], dim=1)
+
+        # cumsum() to get the number of matched characters in the stop string after each token
+        cumsum = lengths_with_ends.cumsum(dim=1)  # B x maximum_token_len x num_stop_strings x max_valid_end_lens
+
+        # The calculation above assumes that all tokens are in valid positions. Now we mask the ones that are not.
+        # First, tokens match the start of the string if they have a positive value in the end_lengths vector
+        initial_match = end_lengths > 0
+
+        # Tokens continue the string if the cumsum() so far is one of the valid positions for that token
+        # Note that we're actually tracking one cumsum() for for each possible end_length
+        later_match = torch.any(cumsum[:, :-1, :, None] == valid_positions[:, :, :, :, None], axis=-2)
+
+        # The match vector is a boolean vector that indicates which positions have valid tokens
+        match = torch.cat([initial_match, later_match], dim=1)
+
+        # Once a single position does not match, all positions following that position are masked
+        mask = (~match).cumsum(dim=1, dtype=torch.int32)
+        mask = mask == 0
+
+        # The string is matched if we reached a cumsum equal to or greater than the length of the string
+        # before hitting the mask
+        string_matches = torch.amax(cumsum * mask, dim=(1, -1)) >= self.target_lens[None, :]
+
+        # We return a per-sample vector that is True if any stop string is matched for that sample
+        return torch.any(string_matches, dim=-1)

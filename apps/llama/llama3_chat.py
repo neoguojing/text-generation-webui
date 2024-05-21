@@ -1,6 +1,6 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from transformers.generation.logits_process import LogitsProcessorList
-from transformers import GenerationConfig
+from transformers import GenerationConfig,StoppingCriteriaList
 import torch
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.messages import BaseMessage, HumanMessage,AIMessage,SystemMessage
@@ -16,7 +16,7 @@ top_package_path = os.path.abspath(os.path.join(current_dir, "../../"))
 
 # 将顶层package路径添加到sys.path
 sys.path.insert(0, top_package_path)
-from apps.generation_utils import StopWordsLogitsProcessor
+from apps.generation_utils import StopWordsLogitsProcessor,StopStringCriteria
 from apps.config import model_root
 from apps.base import Task,CustomerLLM
 from typing import (
@@ -74,6 +74,8 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
         self.react_stop_words_tokens.append(self.tokenizer.convert_tokens_to_ids("<|eot_id|>"))
         print("<|eot_id|>",self.tokenizer.convert_tokens_to_ids("<|eot_id|>"))
         print("stop_words_ids:",self.stop_words_ids)
+
+        self.stopping_criteria = StoppingCriteriaList([StopStringCriteria(tokenizer=self.tokenizer, stop_strings=self.stop)])
         
 
     @property
@@ -105,8 +107,7 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
 
             logits_processor = LogitsProcessorList([stop_words_logits_processor])
 
-        from transformers import StoppingCriteriaList,StopStringCriteria
-        stopping_criteria = StoppingCriteriaList([StopStringCriteria(stops = [[21943], [5657]])])
+        
 
         generation_config = GenerationConfig(
             max_new_tokens=self.max_window_size,
@@ -127,8 +128,7 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
             input_ids,
             generation_config = generation_config,
             # logits_processor=logits_processor,
-            stop_strings=self.stop, 
-            tokenizer=self.tokenizer
+            stopping_criteria=stopping_criteria,
         )
 
         response = outputs[0][input_ids.shape[-1]:]
