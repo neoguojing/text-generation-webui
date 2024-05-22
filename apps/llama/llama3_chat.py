@@ -45,6 +45,7 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
     stop_words_ids: Optional[List[List[int]]]
     online: bool = False
     token: str = ""
+    stopping_criteria: StoppingCriteriaList = None
 
     def __init__(self, model_path: str,token: str,**kwargs):
         if model_path is not None:
@@ -74,7 +75,7 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
         self.react_stop_words_tokens.append(self.tokenizer.convert_tokens_to_ids("<|eot_id|>"))
         print("<|eot_id|>",self.tokenizer.convert_tokens_to_ids("<|eot_id|>"))
         print("stop_words_ids:",self.stop_words_ids)
-
+        # pdb.set_trace()
         self.stopping_criteria = StoppingCriteriaList([StopStringCriteria(tokenizer=self.tokenizer, stop_strings=self.stop)])
         
 
@@ -128,13 +129,13 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
             input_ids,
             generation_config = generation_config,
             # logits_processor=logits_processor,
-            stopping_criteria=stopping_criteria,
+            stopping_criteria=self.stopping_criteria,
         )
 
         response = outputs[0][input_ids.shape[-1]:]
         decode_resp = self.tokenizer.decode(response, skip_special_tokens=True)
     
-        # print("Llama3 output-----------:",decode_resp)
+        print("Llama3 output-----------:",decode_resp)
         message = AIMessage(
             content=decode_resp,
             additional_kwargs={},  # Used to add additional payload (e.g., function calling request)
