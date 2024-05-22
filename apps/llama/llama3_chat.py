@@ -208,8 +208,8 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
                 ret.append({"role": "user", "content": item.content})
 
         return ret
-    
-    def _api_call(self,input: List[BaseMessage]):
+    @staticmethod
+    def _api_call(input: List[BaseMessage]):
         import requests
         API_URL = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
         headers = {"Authorization": f"Bearer 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"}

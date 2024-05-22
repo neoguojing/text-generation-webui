@@ -206,20 +206,20 @@ if __name__ == '__main__':
     from langchain_community.chat_message_histories import ChatMessageHistory
     from langchain_core.runnables.history import RunnableWithMessageHistory
     from apps.parser import QwenAgentOutputParser
-    message_history = ChatMessageHistory()
-    tools = [search]
-    # tool_names = [tool.name for tool in tools]
-    model = Llama3Chat(model_path=os.path.join(model_root,"llama3"),token=None)
-    output_parser = QwenAgentOutputParser()
-    agent = create_react_agent(
-        llm=model,
-        tools=tools,
-        prompt=prompt,
-        output_parser=output_parser,
-    )
+    # message_history = ChatMessageHistory()
+    # tools = [search]
+    # # tool_names = [tool.name for tool in tools]
+    # model = Llama3Chat(model_path=os.path.join(model_root,"llama3"),token=None)
+    # output_parser = QwenAgentOutputParser()
+    # agent = create_react_agent(
+    #     llm=model,
+    #     tools=tools,
+    #     prompt=prompt,
+    #     output_parser=output_parser,
+    # )
 
-    excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,
-                                                 handle_parsing_errors=True,stream_runnable=False)
+    # excutor = AgentExecutor.from_agent_and_tools(agent=agent,tools=tools, verbose=True,
+    #                                              handle_parsing_errors=True,stream_runnable=False)
     # agent_with_chat_history = RunnableWithMessageHistory(
     #     excutor,
     #     # This is needed because in most real world scenarios, a session id is needed
@@ -228,10 +228,33 @@ if __name__ == '__main__':
     #     input_messages_key="input",
     #     history_messages_key="chat_history",
     # )
-    pdb.set_trace()
-    excutor.invoke({"input": "今天上海的天气,中文","chat_history":[]})
+    # pdb.set_trace()
+    # excutor.invoke({"input": "今天上海的天气,中文","chat_history":[]})
     # agent_with_chat_history.invoke({"input": "今天上海的天气"},config={"configurable": {"session_id": "<foo>"}},)
-    # model = Llama3Chat(None,"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")
-    # out = model._api_call("微积分的分类，请使用中文回答")
-    # print(out)
+    out = Llama3Chat._api_call(input="""Complete the objective as best you can. You have access to the following tools:
+
+Search: search from internet
+
+Please answer the question based on the following facts. The factual basis for reference is as follows:
+
+Use the following format:
+
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [Search]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can repeat N times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question
+
+These were previous tasks you completed:
+
+
+
+Begin!
+
+Question: 今天上海天气
+""")
+    print(out)
     
