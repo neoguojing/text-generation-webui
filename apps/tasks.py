@@ -119,20 +119,20 @@ class CustomAgent(LLMSingleActionAgent):
 class Agent(Task):
     
     def __init__(self):
-        prompt = QwenAgentPromptTemplate(
+        # prompt = QwenAgentPromptTemplate(
+        #     tools=tools,
+        #     # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
+        #     # This includes the `intermediate_steps` variable because that is needed
+        #     input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
+        # )
+        # prompt = hub.pull("hwchase17/react-chat")
+
+        prompt = AgentPromptTemplate(
             tools=tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because that is needed
             input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
         )
-        # prompt = hub.pull("hwchase17/react-chat")
-
-        # prompt = AgentPromptTemplate(
-        #     tools=[],
-        #     # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
-        #     # This includes the `intermediate_steps` variable because that is needed
-        #     input_variables=["input", "intermediate_steps",'tools', 'tool_names', 'agent_scratchpad']
-        # )
 
         print("agent prompt:",prompt)
         # from langchain.memory import ConversationBufferMemory
