@@ -177,8 +177,8 @@ class Agent(Task):
         return self.run(input,**kwargs)
     
     def init_model(self):
-        # model = ModelFactory.get_model("qwen")
-        model = ModelFactory.get_model("llama3")
+        model = ModelFactory.get_model("qwen")
+        # model = ModelFactory.get_model("llama3")
         return [model]
     
     def destroy(self):
