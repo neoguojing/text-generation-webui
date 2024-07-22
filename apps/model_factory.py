@@ -19,6 +19,7 @@ from apps.translate.nllb import Translate
 from apps.multi_task.speech import SeamlessM4t,Whisper,XTTS
 from apps.image.sd import StableDiff,Image2Image
 from apps.llama.llama3 import Llama3
+from apps.qwen2.qwen2_chat import Qwen2Chat
 from apps.llama.llama3_chat import Llama3Chat
 from apps.embedding.embedding import Embedding
 from apps.config import model_root
@@ -193,6 +194,9 @@ class ModelFactory:
                         model_path = os.path.join(model_root,"chinese/Qwen/Qwen-7B-Chat-Int4")
                         # model_path = os.path.join(model_root,"chinese/Qwen/Qwen-1_8B-Chat-Int8")
                         instance = QwenLLM(model_path=model_path)
+                    elif model_name == "qwen2": 
+                        model_path = os.path.join(model_root,"qwen2")
+                        instance = Qwen2Chat(model_path=model_path)
                     elif model_name == "qianfan": 
                         instance = QianfanChatEndpoint(streaming=True, model="ERNIE-Bot-4")
                     elif model_name == "tongyi": 

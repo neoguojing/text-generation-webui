@@ -65,8 +65,8 @@ class Qwen2Chat(BaseChatModel,CustomerLLM):
                 device_map="auto",
             ))
             self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-            self.tokenizer.save_pretrained(os.path.join(model_root,"qwen2-1.5"))
-            self.model.save_pretrained(os.path.join(model_root,"qwen2-1.5"))
+            # self.tokenizer.save_pretrained(os.path.join(model_root,"qwen2-1.5"))
+            # self.model.save_pretrained(os.path.join(model_root,"qwen2-1.5"))
             
        
         self.model.to(self.device)
@@ -122,19 +122,24 @@ class Qwen2Chat(BaseChatModel,CustomerLLM):
         )
         
         input = self._format_message(messages)
-        print("Llama3 input-----------:",input)
+        print("qwen2 input-----------:",input)
         
-        input_ids =self.tokenize(input, return_tensors="pt").to(self.device)
+        text = self.tokenizer.apply_chat_template(
+            input,
+            tokenize=False,
+            add_generation_prompt=True
+        )
+        model_inputs =self.tokenize([text], return_tensors="pt").to(self.device)
         # print("Llama3 input:",input)
         generated_ids = self.model.generate(
-            input_ids,
+            model_inputs.input_ids,
             generation_config = generation_config,
             # logits_processor=logits_processor,
             stopping_criteria=self.stopping_criteria,
         )
 
         generated_ids = [
-            output_ids[len(input_ids):] for input_ids, output_ids in zip(input_ids, generated_ids)
+            output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
         ]
 
         response = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
@@ -172,21 +177,28 @@ class Qwen2Chat(BaseChatModel,CustomerLLM):
             messages.append({"role": "user", "content": row[0]})
             messages.append({"role": "assistant", "content": row[1]})
         messages.append({"role": "user", "content": prompt})
-        print("Llama3 messages:",messages)
+        print("qwen2 messages:",messages)
 
-        input_ids =self.tokenize(messages)
-        print("Llama3 input_ids:",self.react_stop_words_tokens)
-        outputs = self.model.generate(
-            input_ids,
-            max_new_tokens=self.max_window_size,
-            eos_token_id=self.react_stop_words_tokens,
-            do_sample=True,
-            temperature=0.6,
-            top_p=0.9,
-            # stop_words_ids=self.stop_words_ids,
+        text = self.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
         )
-        response = outputs[0][input_ids.shape[-1]:]
-        return self.tokenizer.decode(response, skip_special_tokens=True)
+        
+        model_inputs =self.tokenizer([text], return_tensors="pt").to(self.device)
+
+        print("qwen2 input_ids:",model_inputs.input_ids)
+        generated_ids = self.model.generate(
+            model_inputs.input_ids,
+            max_new_tokens=self.max_window_size
+        )
+        generated_ids = [
+            output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+        ]
+
+        response = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        print(response)
+        return response
 
     @property
     def _identifying_params(self) -> Mapping[str, Any]:
@@ -231,9 +243,9 @@ class Qwen2Chat(BaseChatModel,CustomerLLM):
         return output[0]['generated_text']
     
 
-if __name__ == '__main__':
-    prompt = '''
-    俄乌战争
-    '''
-    model = Qwen2Chat(model_path=None)
-    out = model._call(prompt,system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])
+# if __name__ == '__main__':
+#     prompt = '''
+#     俄乌战争
+#     '''
+#     model = Qwen2Chat(model_path=os.path.join(model_root,"qwen2"))
+#     out = model._call(prompt,system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])
