@@ -14,7 +14,6 @@ from typing import Any, List, Mapping, Optional
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.llms.base import LLM
 from langchain_core.language_models import BaseChatModel
-from apps.inference import load_model,chat
 from apps.translate.nllb import Translate
 from apps.multi_task.speech import SeamlessM4t,Whisper,XTTS
 from apps.image.sd import StableDiff,Image2Image
@@ -43,139 +42,6 @@ os.environ["QIANFAN_SK"] = "your_sk"
 # tongyi
 os.environ["DASHSCOPE_API_KEY"] = ""
 
-class LLamaLLM(CustomerLLM):
-    model_path: str = Field(None, alias='model_path')
-    chat_format: Optional[str]   = 'llama'
-    max_window_size: Optional[int]   = 3096
-
-    def __init__(self, model_path: str,**kwargs):
-        model,tokenizer = load_model(model_path=model_path,llama=True)
-        super(LLamaLLM, self).__init__(llm=model)
-        self.model_path: str = model_path
-        self.tokenizer = tokenizer
-        
-
-    @property
-    def _llm_type(self) -> str:
-        return "llama"
-    
-    @property
-    def model_name(self) -> str:
-        return "llama"
-
-    def _call(
-        self,
-        prompt: str,
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
-        **kwargs: Any,
-    ) -> str:
-        response, _ = chat(self.model,self.tokenizer,prompt,history=None,
-                           chat_format=self.chat_format,
-                           max_window_size=self.max_window_size)
-        return response
-
-    @property
-    def _identifying_params(self) -> Mapping[str, Any]:
-        """Get the identifying parameters."""
-        return {"model_path": self.model_path}
-
-class QwenLLM(BaseChatModel,CustomerLLM):
-    model_path: str = Field(None, alias='model_path')
-    chat_format: Optional[str]   = 'chatml'
-    max_window_size: Optional[int]   = 8192
-    stop = ["Observation:", "Observation:\n","\nObservation:"]
-    react_stop_words_tokens: Optional[List[List[int]]]
-    
-
-    def __init__(self, model_path: str,**kwargs):
-        model,tokenizer = load_model(model_path=model_path,llama=False,load_in_8bit=False)
-        super(QwenLLM, self).__init__(llm=model)
-        self.model_path: str = model_path
-        self.tokenizer = tokenizer
-        self.react_stop_words_tokens = [self.tokenizer.encode(stop_) for stop_ in self.stop]
-        
-
-    @property
-    def _llm_type(self) -> str:
-        return "qwen"
-    
-    @property
-    def model_name(self) -> str:
-        return "qwen"
-
-    def _generate(
-        self,
-        messages: List[BaseMessage],
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
-        **kwargs: Any,
-    ) -> ChatResult:
-        # pdb.set_trace()
-        system,history,query = self._format_message(messages)
-        print("qwen input-----------:",system,history,query)
-        decode_resp = self._call(query,history=history,system=system)
-        print("qwen output-----------:",decode_resp)
-        message = AIMessage(
-            content=decode_resp,
-            additional_kwargs={},  # Used to add additional payload (e.g., function calling request)
-            response_metadata={  # Use for response metadata
-                "time_in_seconds": 3,
-            },
-        )
-
-        generation = ChatGeneration(message=message)
-        return ChatResult(generations=[generation])
-    
-    def _call(
-        self,
-        prompt: str,
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
-        **kwargs: Any,
-    ) -> str:
-        if stop is not None:
-            self.react_stop_words_tokens.extend([self.tokenizer.encode(stop_) for stop_ in stop])
-        
-        system = kwargs.pop('system', '')
-        history = kwargs.pop('history', [])
-        response, _ = chat(self.model,self.tokenizer,
-                           prompt,history=history,
-                           chat_format=self.chat_format,
-                           max_window_size=self.max_window_size,
-                           stop_words_ids=self.react_stop_words_tokens,
-                           system=system
-                           )
-        return response
-
-    @property
-    def _identifying_params(self) -> Mapping[str, Any]:
-        """Get the identifying parameters."""
-        return {"model_path": self.model_path}
-    
-    def _format_message(self,
-                        messages: List[BaseMessage]) :
-        system = ""
-        history = []
-        query = ""
-        anwser = ""
-        for item in messages:
-            if isinstance(item,SystemMessage):
-                system = item.content
-            if isinstance(item,AIMessage):
-                anwser = item.content
-            if isinstance(item,HumanMessage):
-                query = item.content
-            if isinstance(item,str):
-                query = item
-            if anwser != "":
-                history.append([query,anwser])
-                anwser = ""
-                query = ""
-
-
-        return system,history,query
-
 class ModelFactory:
     temperature = 0
     _instances = {}
@@ -189,11 +55,6 @@ class ModelFactory:
                     print(f"loading the model {model_name},wait a minute...")
                     if model_name == "openai":
                         instance = OpenAI()
-                    elif model_name == "qwen": 
-                        # model_path = os.path.join(model_root,"chinese/Qwen-7B-Chat")
-                        model_path = os.path.join(model_root,"chinese/Qwen/Qwen-7B-Chat-Int4")
-                        # model_path = os.path.join(model_root,"chinese/Qwen/Qwen-1_8B-Chat-Int8")
-                        instance = QwenLLM(model_path=model_path)
                     elif model_name == "qwen2": 
                         model_path = os.path.join(model_root,"qwen2")
                         instance = Qwen2Chat(model_path=model_path)
@@ -201,9 +62,6 @@ class ModelFactory:
                         instance = QianfanChatEndpoint(streaming=True, model="ERNIE-Bot-4")
                     elif model_name == "tongyi": 
                         instance = Tongyi()
-                    elif model_name == "llama": 
-                        model_path = os.path.join(model_root,"chinese/chinese-alpaca-2-7b-hf")
-                        instance = LLamaLLM(model_path=model_path)
                     elif model_name == "llama3": 
                         model_path = os.path.join(model_root,"llama3")
                         # instance = Llama3(model_path=model_path)

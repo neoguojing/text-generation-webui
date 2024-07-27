@@ -230,6 +230,6 @@ if __name__ == '__main__':
     prompt = '''
     俄乌战争
     '''
-    # model = Llama3Chat(model_path=os.path.join(model_root,"qwen2"))
-    model = Llama3Chat(model_path=None)
+    model = Llama3Chat(model_path=os.path.join(model_root,"llama3"))
+    # model = Llama3Chat(model_path=None)
     out = model._call(prompt,system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])
