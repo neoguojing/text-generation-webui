@@ -47,7 +47,7 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
     token: str = ""
     stopping_criteria: StoppingCriteriaList = None
 
-    def __init__(self, model_path: str,token: str,**kwargs):
+    def __init__(self, model_path: str,token: str = None,**kwargs):
         if model_path is not None:
             super(Llama3Chat, self).__init__(llm=AutoModelForCausalLM.from_pretrained(
                 model_path,
@@ -57,15 +57,15 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
             self.model_path = model_path
             self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         else:
-            model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+            model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
             super(Llama3Chat, self).__init__(llm=AutoModelForCausalLM.from_pretrained(
                 model_id,
                 torch_dtype=torch.bfloat16,
                 device_map="auto",
             ))
             self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-            # tokenizer.save_pretrained(os.path.join(model_root,"llama3"))
-            # model.save_pretrained(os.path.join(model_root,"llama3"))
+            self.tokenizer.save_pretrained(os.path.join(model_root,"llama3"))
+            self.model.save_pretrained(os.path.join(model_root,"llama3"))
             
        
         self.model.to(self.device)
@@ -225,3 +225,11 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
         })
 
         return output[0]['generated_text']
+    
+if __name__ == '__main__':
+    prompt = '''
+    俄乌战争
+    '''
+    # model = Llama3Chat(model_path=os.path.join(model_root,"qwen2"))
+    model = Llama3Chat(model_path=None)
+    out = model._call(prompt,system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])

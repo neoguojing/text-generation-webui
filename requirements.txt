@@ -1,4 +1,5 @@
 accelerate==0.24.*
+safetensors>=0.4.1
 colorama
 datasets
 einops
@@ -8,15 +9,14 @@ markdown
 numpy==1.24.*
 optimum==1.14.0
 pandas
-peft==0.6.*
+peft
 Pillow>=9.5.0
 pyyaml
 requests
-safetensors==0.4.0
 scipy
 sentencepiece
 tensorboard
-transformers==4.35.*
+transformers==4.43.*
 tqdm
 wandb
 
