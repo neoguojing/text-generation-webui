@@ -126,10 +126,8 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
         input_ids =self.tokenize(input)
         # print("Llama3 input:",input)
         outputs = self.model.generate(
-            input_ids,
-            generation_config = generation_config,
-            # logits_processor=logits_processor,
-            stopping_criteria=self.stopping_criteria,
+            input.input_ids,
+            max_new_tokens=1024
         )
 
         response = outputs[0][input_ids.shape[-1]:]
@@ -175,7 +173,7 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
         outputs = self.model.generate(
             input_ids,
             max_new_tokens=self.max_window_size,
-            eos_token_id=self.react_stop_words_tokens,
+            # eos_token_id=self.react_stop_words_tokens,
             do_sample=True,
             temperature=0.6,
             top_p=0.9,
@@ -233,3 +231,4 @@ if __name__ == '__main__':
     model = Llama3Chat(model_path=os.path.join(model_root,"llama3"))
     # model = Llama3Chat(model_path=None)
     out = model._call(prompt,system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])
+    print(out)

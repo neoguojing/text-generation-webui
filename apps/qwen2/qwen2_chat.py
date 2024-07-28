@@ -113,8 +113,6 @@ class Qwen2Chat(BaseChatModel,CustomerLLM):
 
         generation_config = GenerationConfig(
             max_new_tokens=self.max_window_size,
-            eos_token_id=self.react_stop_words_tokens,
-            pad_token_id=self.tokenizer.eos_token_id,
             do_sample=True,
             num_beams=1,
             temperature=0.6,
@@ -129,13 +127,14 @@ class Qwen2Chat(BaseChatModel,CustomerLLM):
             tokenize=False,
             add_generation_prompt=True
         )
-        model_inputs =self.tokenize([text], return_tensors="pt").to(self.device)
+        model_inputs =self.tokenizer([text], return_tensors="pt").to(self.device)
         # print("Llama3 input:",input)
         generated_ids = self.model.generate(
             model_inputs.input_ids,
-            generation_config = generation_config,
+            # generation_config = generation_config,
             # logits_processor=logits_processor,
-            stopping_criteria=self.stopping_criteria,
+            # stopping_criteria=self.stopping_criteria,
+            max_new_tokens=self.max_window_size
         )
 
         generated_ids = [
@@ -243,9 +242,12 @@ class Qwen2Chat(BaseChatModel,CustomerLLM):
         return output[0]['generated_text']
     
 
-# if __name__ == '__main__':
-#     prompt = '''
-#     俄乌战争
-#     '''
-#     model = Qwen2Chat(model_path=os.path.join(model_root,"qwen2"))
-#     out = model._call(prompt,system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])
+if __name__ == '__main__':
+    prompt = '''
+    俄乌战争
+    '''
+    model = Qwen2Chat(model_path=os.path.join(model_root,"qwen2"))
+    # out = model._call(prompt,system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])
+    input = HumanMessage(content=prompt)
+    out = model._generate([input],system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])
+    print(out)

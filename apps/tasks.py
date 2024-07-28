@@ -3,9 +3,9 @@ from langchain import hub
 from langchain.chains.llm import LLMChain
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
 from langchain_community.utilities import SerpAPIWrapper
-from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
+from langchain_community.utilities import WolframAlphaAPIWrapper
 from langchain_community.utilities import ArxivAPIWrapper
-from langchain.utilities.alpha_vantage import AlphaVantageAPIWrapper
+from langchain_community.utilities import AlphaVantageAPIWrapper
 from langchain.agents import Tool,create_react_agent
 from langchain_community.tools import DuckDuckGoSearchRun
 import os

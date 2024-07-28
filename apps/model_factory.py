@@ -16,6 +16,7 @@ from langchain.llms.base import LLM
 from langchain_core.language_models import BaseChatModel
 from apps.translate.nllb import Translate
 from apps.multi_task.speech import SeamlessM4t,Whisper,XTTS
+# from apps.multi_task.speech import SeamlessM4t,Whisper
 from apps.image.sd import StableDiff,Image2Image
 from apps.llama.llama3 import Llama3
 from apps.qwen2.qwen2_chat import Qwen2Chat
