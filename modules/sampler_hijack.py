@@ -204,8 +204,8 @@ class RepetitionPenaltyLogitsProcessorWithRange(LogitsProcessor):
         return scores
 
 
-def get_logits_warper_patch(self, generation_config):
-    warpers = self._get_logits_warper_old(generation_config)
+def get_logits_warper_patch(self, generation_config,device):
+    warpers = self._get_logits_warper_old(generation_config,device)
     warpers_to_add = LogitsProcessorList()
     min_tokens_to_keep = 2 if generation_config.num_beams > 1 else 1
 

@@ -129,12 +129,14 @@ class Qwen2Chat(BaseChatModel,CustomerLLM):
         )
         model_inputs =self.tokenizer([text], return_tensors="pt").to(self.device)
         # print("Llama3 input:",input)
+        # import pdb
+        # pdb.set_trace()
         generated_ids = self.model.generate(
             model_inputs.input_ids,
-            # generation_config = generation_config,
+            generation_config = generation_config,
             # logits_processor=logits_processor,
-            # stopping_criteria=self.stopping_criteria,
-            max_new_tokens=self.max_window_size
+            stopping_criteria=self.stopping_criteria,
+            # max_new_tokens=self.max_window_size
         )
 
         generated_ids = [

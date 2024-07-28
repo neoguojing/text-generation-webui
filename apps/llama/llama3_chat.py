@@ -126,7 +126,7 @@ class Llama3Chat(BaseChatModel,CustomerLLM):
         input_ids =self.tokenize(input)
         # print("Llama3 input:",input)
         outputs = self.model.generate(
-            input.input_ids,
+            input_ids,
             max_new_tokens=1024
         )
 
