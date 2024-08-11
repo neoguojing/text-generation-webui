@@ -19,10 +19,10 @@ def get_stock(input:str,topk=5) ->str:
     # """Useful for get one stock trade info; input must be the stock code"""
     """Useful for takeing the stock symbol or ticker as input and retrieves relevant trading data for that stock"""
 
-    translate = ModelFactory.get_model("qwen")
+    translate = ModelFactory.get_model("llama3")
     stock_code = stock_code_prompt(input)
-    llm_out = translate.predict(stock_code)
-    input = parse_stock_code(llm_out)
+    llm_out = translate.invoke(stock_code)
+    input = parse_stock_code(llm_out.content)
     
     # replace the "demo" apikey below with your own key from https://www.alphavantage.co/support/#api-key
     url = 'https://www.alphavantage.co/query'

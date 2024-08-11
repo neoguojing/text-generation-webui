@@ -54,7 +54,7 @@ class Retriever(Task):
         self.vector_store.add_documents(docs)
 
     def retrieve_documents(self, query):
-        docs = self.retriever.get_relevant_documents(query)
+        docs = self.retriever.invoke(query)
         texts = []
         for d in docs:
             texts.append(d.page_content)
