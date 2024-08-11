@@ -193,7 +193,6 @@ if __name__ == '__main__':
     sys.path.insert(0, top_package_path)
     from apps.prompt import AgentPromptTemplate
     from apps.llama.llama3_chat import Llama3Chat
-    from langchain.chains.llm import LLMChain
     from langchain.agents import AgentExecutor,create_react_agent
     from apps.config import model_root
     prompt = AgentPromptTemplate(

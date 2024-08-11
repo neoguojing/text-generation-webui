@@ -88,7 +88,7 @@ class Task(ITask):
         if input is None or input == "":
             return ""
         if isinstance(input,str):
-            output = self.excurtor[0].predict(input,**kwargs)
+            output = self.excurtor[0].invoke(input,**kwargs)
         else:
             output = self.excurtor[0]._call(input,**kwargs)
         return output

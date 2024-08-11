@@ -139,9 +139,9 @@ class Agent(Task):
         # self.memory = ConversationBufferMemory(memory_key="history")
         
         output_parser = QwenAgentOutputParser()
-        llm_chain = LLMChain(llm=self.excurtor[0], prompt=prompt)
+        # llm_chain = LLMChain(llm=self.excurtor[0], prompt=prompt)
 
-        tool_names = [tool.name for tool in tools]
+        # tool_names = [tool.name for tool in tools]
 
         # agent = CustomAgent(
         #     llm_chain=llm_chain,
