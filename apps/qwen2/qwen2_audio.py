@@ -49,6 +49,7 @@ class Qwen2Audio(BaseChatModel,CustomerLLM):
     online: bool = False
     token: str = ""
     stopping_criteria: StoppingCriteriaList = None
+    processor: Any
 
     def __init__(self, model_path: str,**kwargs):
         if model_path is not None:
@@ -59,7 +60,6 @@ class Qwen2Audio(BaseChatModel,CustomerLLM):
             self.model_path = model_path
             self.processor = AutoProcessor.from_pretrained(model_path)
         else:
-            # model_id = "Qwen/Qwen2-7B-Instruct"
             model_id = "Qwen/Qwen2-Audio-7B-Instruct"
             super(Qwen2Audio, self).__init__(llm=Qwen2AudioForConditionalGeneration.from_pretrained(
                 model_id,
@@ -69,8 +69,10 @@ class Qwen2Audio(BaseChatModel,CustomerLLM):
             self.processor.save_pretrained(os.path.join(model_root,"qwen2-audio"))
             self.model.save_pretrained(os.path.join(model_root,"qwen2-audio"))
             
+            
+            
        
-        self.model.to(self.device)
+        # self.model.to(self.device)
 
     @property
     def _llm_type(self) -> str:
