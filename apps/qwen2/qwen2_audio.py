@@ -11,6 +11,7 @@ from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResu
 from langchain_core.language_models import BaseChatModel
 import os
 import sys
+import time
 # 获取当前脚本所在的目录路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -72,7 +73,7 @@ class Qwen2Audio(BaseChatModel,CustomerLLM):
             
             
        
-        # self.model.to(self.device)
+        # self.model.to("cuda")
 
     @property
     def _llm_type(self) -> str:
@@ -90,11 +91,12 @@ class Qwen2Audio(BaseChatModel,CustomerLLM):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> ChatResult:
-
+        start_time = time.time()
         conversation = self._format_message(messages)
-        print("qwen2 audio input-----------:",input)
+        print("qwen2 audio conversation-----------:",conversation)
         
         text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
+        print("qwen2 audio text-----------:",text)
         audios = []
         for message in conversation:
             if isinstance(message["content"], list):
@@ -104,9 +106,14 @@ class Qwen2Audio(BaseChatModel,CustomerLLM):
                             BytesIO(urlopen(ele['audio_url']).read()), 
                             sr=self.processor.feature_extractor.sampling_rate)[0]
                         )
-
+        audio = kwargs.pop('audio', None)
+        if audio is not None:
+            audios.append(audio)
+        if len(audios) == 0:
+            audios = None
+        print("qwen2 audio audios-----------:",audios)
         inputs = self.processor(text=text, audios=audios, return_tensors="pt", padding=True)
-        inputs.input_ids = inputs.input_ids.to(self.device)
+        inputs.input_ids = inputs.input_ids.to("cuda")
 
         generate_ids = self.model.generate(**inputs, max_length=256)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
@@ -114,11 +121,13 @@ class Qwen2Audio(BaseChatModel,CustomerLLM):
         response = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
     
         print("qwen2audio output-----------:",response)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
         message = AIMessage(
             content=response,
             additional_kwargs={},  # Used to add additional payload (e.g., function calling request)
             response_metadata={  # Use for response metadata
-                "time_in_seconds": 3,
+                "time_in_seconds": elapsed_time,
             },
         )
 
@@ -133,42 +142,23 @@ class Qwen2Audio(BaseChatModel,CustomerLLM):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> str:
-        if stop is not None:
-            self.stop_words_ids.extend([self.tokenizer.encode(stop_) for stop_ in stop])
         
         system = kwargs.pop('system', '')
         history = kwargs.pop('history', [])
         
         messages = []
-        messages.append({"role": "system", "content": system})
+        messages.append(SystemMessage(content=system))
         for row in history:
             if row is None or len(row) < 2:
                 continue
-            messages.append({"role": "user", "content": row[0]})
-            messages.append({"role": "assistant", "content": row[1]})
-        messages.append({"role": "user", "content": prompt})
+            
+            messages.append(HumanMessage(content=row[0]))
+            messages.append(AIMessage(content=row[1]))
+        messages.append(HumanMessage(content=prompt))
         print("qwen2 messages:",messages)
 
-        text = self.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True
-        )
-        
-        model_inputs =self.tokenizer([text], return_tensors="pt").to(self.device)
-
-        print("qwen2 input_ids:",model_inputs.input_ids)
-        generated_ids = self.model.generate(
-            model_inputs.input_ids,
-            max_new_tokens=self.max_window_size
-        )
-        generated_ids = [
-            output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        ]
-
-        response = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-        print(response)
-        return response
+        response = self._generate(messages)
+        return response.message.content
     
     @property
     def _identifying_params(self) -> Mapping[str, Any]:
@@ -203,9 +193,9 @@ def looks_like_path(path_str):
 
 if __name__ == '__main__':
     prompt = '''
-    俄乌战争
+    介绍下美国
     '''
-    model = Qwen2Audio(model_path=None)
+    model = Qwen2Audio(model_path=os.path.join(model_root,"qwen2-audio"))
     # out = model._call(prompt,system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])
     input = HumanMessage(content=prompt)
     out = model._generate([input],system="你是一个政治专家,请使用中文",history=[["二战","不知道"]])
