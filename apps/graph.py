@@ -1,175 +1,103 @@
 from langchain_openai import ChatOpenAI
+from typing import Annotated
 
-fast_llm = ChatOpenAI(model="llama3.1-fp16:latest",base_url="http://localhost:11434/v1/",api_key="xxx",verbose=True)
-# Uncomment for a Fireworks model
-# fast_llm = ChatFireworks(model="accounts/fireworks/models/firefunction-v1", max_tokens=32_000)
-long_context_llm = ChatOpenAI(model="llama3.1-fp16:latest",base_url="http://localhost:11434/v1/",api_key="xxx")
+from typing_extensions import TypedDict
+
+from langgraph.graph.message import AnyMessage, add_messages,AIMessage
+from langgraph.graph import END, StateGraph, START
+from langgraph.graph import END, StateGraph, START
+from IPython.display import Image, display
+from langgraph.checkpoint.memory import MemorySaver
+from .tasks import tools
+import uuid
+from langgraph.prebuilt import create_react_agent
+from .prompt import AgentPromptTemplate
+
+# silver_input = {
+#     "messages": [("user", silver_row["description"])],
+#     "test_cases": silver_row["test_cases"],
+#     "runtime_limit": silver_row["runtime_limit"],
+#     "status": "in_progress",
+# }
+
+class State(TypedDict):
+    # Append-only chat memory so the agent can try to recover from initial mistakes.
+    messages: Annotated[list[AnyMessage], add_messages]
+    input_type: str
+    status: str
+
+class AgentGraph:
+    def __init__(self):
+        self.llm = ChatOpenAI(model="llama3.1-fp16:latest",base_url="http://localhost:11434/v1/",api_key="xxx",verbose=True)
+        # prompt = hub.pull("wfh/react-agent-executor")
+        # prompt.pretty_print()
+        self.prompt = AgentPromptTemplate()
+        self.agent_executor = create_react_agent(self.llm, tools, messages_modifier=self.prompt)
+        self.builder = StateGraph(State)
+        self.builder.add_node("inputdecide", solver)
+        self.builder.add_edge(START, "inputdecide")
+        self.builder.add_node("tranlate", solver)
+        self.builder.add_node("speech2text", evaluate)
+        self.builder.add_node("text2image", evaluate)
+        self.builder.add_node("text2speech", evaluate)
+        self.builder.add_node("image2image", evaluate)
+        self.builder.add_node("agent", self.agent_executor)
+        self.builder.add_edge("inputdecide", "tranlate")
+        self.builder.add_edge("inputdecide", "speech2text")
+        self.builder.add_edge("inputdecide", "image2image")
+        self.builder.add_edge("tranlate", "text2image")
+        self.builder.add_edge("speech2text", "agent")
+        self.builder.add_edge("inputdecide", "agent")
+        self.builder.add_edge("agent", "text2speech")
 
 
-from typing import List, Optional
+        self.builder.add_conditional_edges("evaluate", self.control_edge, {END: END, "solver": "solver"})
+        checkpointer = MemorySaver()
+        self.graph = self.builder.compile(checkpointer=checkpointer)
 
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
+    def control_edge(self,state: State):
+        if state.get("status") == "success":
+            return END
+        return "solver"
+    
+    def run(self,input):
+        config = {"configurable": {"thread_id": str(uuid.uuid4())}}
+        events = self.graph.stream(input, config)
+        for event in events:
+            for value in event.values():
+                messages = value.get("messages")
+                if messages:
+                    if isinstance(messages, list):
+                        messages = value["messages"][-1]
+                    print(
+                        "Assistant:",
+                        str(messages.content).replace("\n", "\\n")[:50],
+                    )
+                elif value.get("examples"):
+                    print("Retrieved examples:\n\n", value["examples"][:100] + "...")
+                elif value.get("candidate"):
+                    print(str(value["candidate"].content)[:200])
 
-direct_gen_outline_prompt = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            "You are a Wikipedia writer. Write an outline for a Wikipedia page about a user-provided topic. Be comprehensive and specific.",
-        ),
-        ("user", "{topic}"),
-    ]
-)
 
-
-class Subsection(BaseModel):
-    subsection_title: str = Field(..., title="Title of the subsection")
-    description: str = Field(..., title="Content of the subsection")
-
-    @property
-    def as_str(self) -> str:
-        return f"### {self.subsection_title}\n\n{self.description}".strip()
-
-
-class Section(BaseModel):
-    section_title: str = Field(..., title="Title of the section")
-    description: str = Field(..., title="Content of the section")
-    subsections: Optional[List[Subsection]] = Field(
-        default=None,
-        title="Titles and descriptions for each subsection of the Wikipedia page.",
-    )
-
-    @property
-    def as_str(self) -> str:
-        subsections = "\n\n".join(
-            f"### {subsection.subsection_title}\n\n{subsection.description}"
-            for subsection in self.subsections or []
+    def routes(self,state: State, name: str = "Subject_Matter_Expert"):
+        messages = state["messages"]
+        num_responses = len(
+            [m for m in messages if isinstance(m, AIMessage) and m.name == name]
         )
-        return f"## {self.section_title}\n\n{self.description}\n\n{subsections}".strip()
+        if num_responses >= max_num_turns:
+            return END
+        last_question = messages[-2]
+        if last_question.content.endswith("Thank you so much for your help!"):
+            return END
+        return "ask_question"
+    
+    def display(self):
+        try:
+            display(Image(self.graph.get_graph().draw_mermaid_png()))
+        except Exception:
+            # This requires some extra dependencies and is optional
+            pass
 
-
-class Outline(BaseModel):
-    page_title: str = Field(..., title="Title of the Wikipedia page")
-    sections: List[Section] = Field(
-        default_factory=list,
-        title="Titles and descriptions for each section of the Wikipedia page.",
-    )
-
-    @property
-    def as_str(self) -> str:
-        sections = "\n\n".join(section.as_str for section in self.sections)
-        return f"# {self.page_title}\n\n{sections}".strip()
-
-
-generate_outline_direct = direct_gen_outline_prompt | fast_llm.with_structured_output(
-    Outline
-)
-
-gen_related_topics_prompt = ChatPromptTemplate.from_template(
-    """I'm writing a Wikipedia page for a topic mentioned below. Please identify and recommend some Wikipedia pages on closely related subjects. I'm looking for examples that provide insights into interesting aspects commonly associated with this topic, or examples that help me understand the typical content and structure included in Wikipedia pages for similar topics.
-
-Please list the as many subjects and urls as you can.
-
-Topic of interest: {topic}
-"""
-)
-
-
-class RelatedSubjects(BaseModel):
-    topics: List[str] = Field(
-        description="Comprehensive list of related subjects as background research.",
-    )
-
-
-expand_chain = gen_related_topics_prompt | fast_llm.with_structured_output(
-    RelatedSubjects
-)
-
-class Editor(BaseModel):
-    affiliation: str = Field(
-        description="Primary affiliation of the editor.",
-    )
-    name: str = Field(
-        description="Name of the editor.", pattern=r"^[a-zA-Z0-9_-]{1,64}$"
-    )
-    role: str = Field(
-        description="Role of the editor in the context of the topic.",
-    )
-    description: str = Field(
-        description="Description of the editor's focus, concerns, and motives.",
-    )
-
-    @property
-    def persona(self) -> str:
-        return f"Name: {self.name}\nRole: {self.role}\nAffiliation: {self.affiliation}\nDescription: {self.description}\n"
-
-
-class Perspectives(BaseModel):
-    editors: List[Editor] = Field(
-        description="Comprehensive list of editors with their roles and affiliations.",
-        # Add a pydantic validation/restriction to be at most M editors
-    )
-
-
-gen_perspectives_prompt = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            """You need to select a diverse (and distinct) group of Wikipedia editors who will work together to create a comprehensive article on the topic. Each of them represents a different perspective, role, or affiliation related to this topic.\
-    You can use other Wikipedia pages of related topics for inspiration. For each editor, add a description of what they will focus on.
-
-    Wiki page outlines of related topics for inspiration:
-    {examples}""",
-        ),
-        ("user", "Topic of interest: {topic}"),
-    ]
-)
-
-gen_perspectives_chain = gen_perspectives_prompt | ChatOpenAI(
-    model="llama3.1-fp16:latest",base_url="http://localhost:11434/v1/",api_key="xxx"
-).with_structured_output(Perspectives)
-
-from langchain_community.retrievers import WikipediaRetriever
-from langchain_core.runnables import RunnableLambda
-from langchain_core.runnables import chain as as_runnable
-
-wikipedia_retriever = WikipediaRetriever(load_all_available_meta=True, top_k_results=1)
-
-
-def format_doc(doc, max_length=1000):
-    related = "- ".join(doc.metadata["categories"])
-    return f"### {doc.metadata['title']}\n\nSummary: {doc.page_content}\n\nRelated\n{related}"[
-        :max_length
-    ]
-
-
-def format_docs(docs):
-    return "\n\n".join(format_doc(doc) for doc in docs)
-
-
-@as_runnable
-async def survey_subjects(topic: str):
-    related_subjects = await expand_chain.ainvoke({"topic": topic})
-    retrieved_docs = await wikipedia_retriever.abatch(
-        related_subjects.topics, return_exceptions=True
-    )
-    all_docs = []
-    for docs in retrieved_docs:
-        if isinstance(docs, BaseException):
-            continue
-        all_docs.extend(docs)
-    formatted = format_docs(all_docs)
-    return await gen_perspectives_chain.ainvoke({"examples": formatted, "topic": topic})
 
 if __name__ == '__main__':
-
-    example_topic = "Impact of million-plus token context window language models on RAG"
-    # ret = fast_llm.invoke(example_topic)
-    # print(ret)
-    # initial_outline = generate_outline_direct.invoke({"topic": example_topic})
-
-    # print(initial_outline.as_str)
-
-    # related_subjects = expand_chain.ainvoke({"topic": example_topic})
-    perspectives = survey_subjects.ainvoke(example_topic)
-    print(perspectives.dict())
+    pass
