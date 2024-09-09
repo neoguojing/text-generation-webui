@@ -1,17 +1,15 @@
 from langchain_openai import ChatOpenAI
-from typing import Annotated
-
-from typing_extensions import TypedDict
 
 from langgraph.graph.message import AnyMessage, add_messages,AIMessage
 from langgraph.graph import END, StateGraph, START
 from langgraph.graph import END, StateGraph, START
 from IPython.display import Image, display
 from langgraph.checkpoint.memory import MemorySaver
-from .tasks import tools
+from .tasks import tools,TaskFactory,TASK_IMAGE_GEN,TASK_SPEECH
 import uuid
 from langgraph.prebuilt import create_react_agent
 from .prompt import AgentPromptTemplate
+from .base import State
 
 # silver_input = {
 #     "messages": [("user", silver_row["description"])],
@@ -20,11 +18,7 @@ from .prompt import AgentPromptTemplate
 #     "status": "in_progress",
 # }
 
-class State(TypedDict):
-    # Append-only chat memory so the agent can try to recover from initial mistakes.
-    messages: Annotated[list[AnyMessage], add_messages]
-    input_type: str
-    status: str
+
 
 class AgentGraph:
     def __init__(self):
@@ -37,10 +31,10 @@ class AgentGraph:
         self.builder.add_node("inputdecide", solver)
         self.builder.add_edge(START, "inputdecide")
         self.builder.add_node("tranlate", solver)
-        self.builder.add_node("speech2text", evaluate)
-        self.builder.add_node("text2image", evaluate)
-        self.builder.add_node("text2speech", evaluate)
-        self.builder.add_node("image2image", evaluate)
+        self.builder.add_node("speech2text", TaskFactory.create_task(TASK_SPEECH))
+        self.builder.add_node("text2image", TaskFactory.create_task(TASK_IMAGE_GEN))
+        self.builder.add_node("text2speech", TaskFactory.create_task(TASK_SPEECH))
+        self.builder.add_node("image2image", TaskFactory.create_task(TASK_IMAGE_GEN))
         self.builder.add_node("agent", self.agent_executor)
         self.builder.add_edge("inputdecide", "tranlate")
         self.builder.add_edge("inputdecide", "speech2text")
@@ -52,6 +46,10 @@ class AgentGraph:
 
 
         self.builder.add_conditional_edges("evaluate", self.control_edge, {END: END, "solver": "solver"})
+        self.builder.add_edge("text2speech", END)
+        self.builder.add_edge("agent", END)
+        self.builder.add_edge("image2image", END)
+        self.builder.add_edge("text2image", END)
         checkpointer = MemorySaver()
         self.graph = self.builder.compile(checkpointer=checkpointer)
 

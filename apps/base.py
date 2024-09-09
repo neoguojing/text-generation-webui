@@ -3,8 +3,13 @@ import asyncio
 import torch
 from langchain.llms.base import LLM
 from pydantic import  Field
-from typing import Any
+from typing import Any,Union,List,Dict
 import time
+from typing_extensions import TypedDict
+from langgraph.graph.message import AnyMessage, add_messages
+from typing import Annotated
+from langchain_core.runnables import Runnable, RunnableConfig
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
 class ITask(abc.ABC):
     
@@ -73,6 +78,26 @@ def function_stats(func):
 
     # 返回装饰后的函数
     return wrapper
+
+class CustomAIMessage(AIMessage):
+    media: Union[any, List[Union[any, Dict]]]
+
+class CustomHumanMessage(HumanMessage):
+    media: Union[any, List[Union[any, Dict]]]
+    
+MutimediaMessage = Union[
+    AnyMessage,
+    CustomAIMessage,
+    CustomHumanMessage
+]
+    
+    
+class State(TypedDict):
+    # Append-only chat memory so the agent can try to recover from initial mistakes.
+    messages: Annotated[list[MutimediaMessage], add_messages]
+    input_type: str
+    need_speech: bool = False
+    status: str
 
 class Task(ITask):
     _excurtor: list[CustomerLLM] = None
@@ -144,3 +169,27 @@ class Task(ITask):
         
     def decode(self,ids):
         self.excurtor[0].decode(input)
+        
+    def __call__(self, state: State, config: RunnableConfig):
+        resp = []
+        output = None
+        message = state["messages"][-1]
+        input_type = state["input_type"]
+        
+        if input_type == "text":
+            output = self.run(message.content)
+        elif input_type == "speech":
+            output = self.run(message.media)
+        elif input_type == "image":
+            if isinstance(message.media,str):
+                output = self.run(message.content,image_path=message.media)
+            else:
+                output = self.run(message.content,image_obj=message.media)
+        
+        if isinstance(input,str):
+            output = CustomAIMessage(content=output)
+        else:
+            output = CustomAIMessage(media=output)
+            
+        resp.append(output)
+        return {"messages": resp}
