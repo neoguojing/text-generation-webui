@@ -205,9 +205,9 @@ class ImageGenTask(Task):
         image_obj = kwargs.pop("image_obj",None)
 
         # translate = ModelFactory.get_model("qwen")
-        translate = ModelFactory.get_model("llama3")
-        en_prompt = translate_prompt(input)
-        input = translate.invoke(en_prompt)
+        # translate = ModelFactory.get_model("llama3")
+        # en_prompt = translate_prompt(input)
+        # input = translate.invoke(en_prompt)
         if image_path != "" or image_obj is not None:
             output = self.excurtor[1]._call(input.content,image_path=image_path,image_obj=image_obj)
         else:
