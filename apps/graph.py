@@ -1,10 +1,19 @@
-from langchain_openai import ChatOpenAI
+import os
+import sys
+# 获取当前脚本所在的目录路径
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
+# 将当前package的父目录作为顶层package的路径
+top_package_path = os.path.abspath(os.path.join(current_dir, ".."))
+
+# 将顶层package路径添加到sys.path
+sys.path.insert(0, top_package_path)
+from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph, START
 from langchain_core.output_parsers import StrOutputParser
 from IPython.display import Image, display
 from langgraph.checkpoint.memory import MemorySaver
-from .tasks import tools,TaskFactory,TASK_IMAGE_GEN,TASK_SPEECH
+from apps.tasks import tools,TaskFactory,TASK_IMAGE_GEN,TASK_SPEECH
 import uuid
 from langgraph.prebuilt import create_react_agent
 from .prompt import AgentPromptTemplate,english_traslate_template
@@ -26,12 +35,14 @@ input_example = {
 
 class AgentGraph:
     def __init__(self):
+        checkpointer = MemorySaver()
         self.llm = ChatOpenAI(model="llama3.1-fp16:latest",base_url="http://localhost:11434/v1/",api_key="xxx",verbose=True)
+        self.llm_with_tools = self.llm.bind_tools(tools=tools)
         # prompt = hub.pull("wfh/react-agent-executor")
         # prompt.pretty_print()
         self.translate_chain = english_traslate_template | self.llm | StrOutputParser()
         self.prompt = AgentPromptTemplate()
-        self.agent_executor = create_react_agent(self.llm, tools, messages_modifier=self.prompt)
+        self.agent_executor = create_react_agent(self.llm, tools, messages_modifier=self.prompt,checkpointer=checkpointer)
 
         self.builder = StateGraph(State)
         self.builder.add_node("inputdecide", self.routes)
@@ -54,7 +65,7 @@ class AgentGraph:
         self.builder.add_conditional_edges("agent", self.agent_edge_control, {END: END, "text2speech": "text2speech"})
         self.builder.add_edge("image2image", END)
         self.builder.add_edge("text2image", END)
-        checkpointer = MemorySaver()
+        
         self.graph = self.builder.compile(checkpointer=checkpointer)
 
     def routes(self,state: State, config: RunnableConfig):
@@ -111,4 +122,6 @@ class AgentGraph:
 if __name__ == '__main__':
     g = AgentGraph()
     g.display()
-    g.run(input_example)
+    # resp = g.translate_chain.invoke({"text":"生成一张地球图片"})
+    # resp = g.agent_executor.invoke({"text":"生成一张地球图片"})
+    # resp = g.run(input_example)

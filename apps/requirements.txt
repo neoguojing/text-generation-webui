@@ -13,3 +13,4 @@ langchain_community==0.2.5
 pypdf==3.17.4
 langgraph==0.2.19
 langchain_openai
+ipython

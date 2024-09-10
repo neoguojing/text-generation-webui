@@ -80,10 +80,10 @@ def function_stats(func):
     return wrapper
 
 class CustomAIMessage(AIMessage):
-    media: Union[any, List[Union[any, Dict]]]
+    media: Union[Any, List[Union[Any, Dict]]]
 
 class CustomHumanMessage(HumanMessage):
-    media: Union[any, List[Union[any, Dict]]]
+    media: Union[Any, List[Union[Any, Dict]]]
     
 MutimediaMessage = Union[
     AnyMessage,
