@@ -234,3 +234,8 @@ def system_prompt(system,context=""):
     template = """{system}\nPlease answer the question based on the following facts. The factual basis for reference is as follows:\n\n{context}"""
     prompt = PromptTemplate.from_template(template)
     return prompt.format(system=system,context=context)
+
+
+english_traslate_template = ChatPromptTemplate.from_messages(
+    [("system", """Translate the following into English and only return the translation result:"""), ("user", "{text}")]
+)

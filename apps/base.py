@@ -96,7 +96,7 @@ class State(TypedDict):
     # Append-only chat memory so the agent can try to recover from initial mistakes.
     messages: Annotated[list[MutimediaMessage], add_messages]
     input_type: str
-    need_speech: bool = False
+    need_speech: bool
     status: str
 
 class Task(ITask):
@@ -181,10 +181,15 @@ class Task(ITask):
         elif input_type == "speech":
             output = self.run(message.media)
         elif input_type == "image":
-            if isinstance(message.media,str):
-                output = self.run(message.content,image_path=message.media)
+            # text to image
+            if message.media is None and message.content != "":
+                output = self.run(message.content)
             else:
-                output = self.run(message.content,image_obj=message.media)
+                # image to image
+                if isinstance(message.media,str):
+                    output = self.run(message.content,image_path=message.media)
+                else:
+                    output = self.run(message.content,image_obj=message.media)
         
         if isinstance(input,str):
             output = CustomAIMessage(content=output)
