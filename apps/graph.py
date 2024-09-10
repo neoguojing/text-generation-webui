@@ -110,4 +110,5 @@ class AgentGraph:
 
 if __name__ == '__main__':
     g = AgentGraph()
+    g.display()
     g.run(input_example)
