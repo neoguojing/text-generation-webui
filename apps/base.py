@@ -78,23 +78,10 @@ def function_stats(func):
 
     # 返回装饰后的函数
     return wrapper
-
-class CustomAIMessage(AIMessage):
-    media: Union[Any, List[Union[Any, Dict]]]
-
-class CustomHumanMessage(HumanMessage):
-    media: Union[Any, List[Union[Any, Dict]]]
-    
-MutimediaMessage = Union[
-    AnyMessage,
-    CustomAIMessage,
-    CustomHumanMessage
-]
-    
     
 class State(TypedDict):
     # Append-only chat memory so the agent can try to recover from initial mistakes.
-    messages: Annotated[list[MutimediaMessage], add_messages]
+    messages: Annotated[list[AnyMessage], add_messages]
     input_type: str
     need_speech: bool
     status: str
@@ -179,22 +166,26 @@ class Task(ITask):
         if input_type == "text":
             output = self.run(message.content)
         elif input_type == "speech":
-            output = self.run(message.media)
+            if message.content != "":
+                output = self.run(message.content)
+            else:
+                output = self.run(message.additional_kwargs.get('speech'))
         elif input_type == "image":
             # text to image
-            if message.media is None and message.content != "":
+            if message.additional_kwargs.get('image') is None and message.content != "":
                 output = self.run(message.content)
             else:
                 # image to image
-                if isinstance(message.media,str):
-                    output = self.run(message.content,image_path=message.media)
+                if isinstance(message.additional_kwargs.get('image'),str):
+                    output = self.run(message.content,image_path=message.additional_kwargs.get('image'))
                 else:
-                    output = self.run(message.content,image_obj=message.media)
+                    output = self.run(message.content,image_obj=message.additional_kwargs.get('image'))
         
-        if isinstance(input,str):
-            output = CustomAIMessage(content=output)
+        if isinstance(output,str):
+            output = AIMessage(content=output)
         else:
-            output = CustomAIMessage(media=output)
+            additional_kwargs = {"media":output}
+            output = AIMessage(additional_kwargs=additional_kwargs)
             
         resp.append(output)
         return {"messages": resp}
