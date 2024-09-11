@@ -97,12 +97,12 @@ class AgentGraph:
                     
                     if messages.content != "":
                         print(
-                            "Assistant:",
+                            "ai:",
                             str(messages.content).replace("\n", "\\n")[:50],
                         )
                     
-                    if messages.media is not None:
-                        pass
+                    if messages.additional_kwargs.get('media') is not None:
+                        print(messages.additional_kwargs.get('media'))
     
     def display(self):
         try:
