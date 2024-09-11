@@ -173,13 +173,14 @@ class Task(ITask):
         elif input_type == "image":
             # text to image
             if message.additional_kwargs.get('image') is None and message.content != "":
-                output = self.run(message.content)
+                print("text to image:",message)
+                output = self.run(message)
             else:
                 # image to image
                 if isinstance(message.additional_kwargs.get('image'),str):
-                    output = self.run(message.content,image_path=message.additional_kwargs.get('image'))
+                    output = self.run(message,image_path=message.additional_kwargs.get('image'))
                 else:
-                    output = self.run(message.content,image_obj=message.additional_kwargs.get('image'))
+                    output = self.run(message,image_obj=message.additional_kwargs.get('image'))
         
         if isinstance(output,str):
             output = AIMessage(content=output)

@@ -22,8 +22,11 @@ from apps.prompt import AgentPromptTemplate,english_traslate_template,agent_prom
 from apps.base import State
 from langchain_core.runnables import  RunnableConfig
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain.globals import set_debug
+from langchain.globals import set_verbose
 
-
+set_verbose(True)
+set_debug(True)
 class AgentGraph:
     def __init__(self):
         checkpointer = MemorySaver()
@@ -31,7 +34,7 @@ class AgentGraph:
         self.llm_with_tools = self.llm.bind_tools(tools=tools)
         # prompt = hub.pull("wfh/react-agent-executor")
         # prompt.pretty_print()
-        self.translate_chain = english_traslate_template | self.llm 
+        self.translate_chain = english_traslate_template | self.llm | StrOutputParser()
         self.prompt = agent_prompt
         self.prompt = self.prompt.partial(system_message="You should provide accurate data for the chart_generator to use.")
         self.prompt = self.prompt.partial(tool_names=", ".join([tool.name for tool in tools]))
@@ -39,7 +42,7 @@ class AgentGraph:
 
         self.builder = StateGraph(State)
         
-        self.builder.add_node("tranlate", self.translate_chain)
+        self.builder.add_node("tranlate", self.translate_node)
         self.builder.add_node("speech2text", TaskFactory.create_task(TASK_SPEECH))
         self.builder.add_node("text2image", TaskFactory.create_task(TASK_IMAGE_GEN))
         self.builder.add_node("text2speech", TaskFactory.create_task(TASK_SPEECH))
@@ -55,11 +58,24 @@ class AgentGraph:
         self.builder.add_edge("text2image", END)
         self.builder.add_edge("text2speech", END)
         
-        self.builder.add_conditional_edges(START, self.routes,
-                                           {"tranlate": "tranlate", "speech2text": "speech2text","agent":"agent"})
+        # self.builder.add_conditional_edges(START, self.routes,
+        #                                    {"tranlate": "tranlate", "speech2text": "speech2text","agent":"agent"})
+        
+        self.builder.add_conditional_edges(START, self.routes)
         self.graph = self.builder.compile(checkpointer=checkpointer)
         # self.graph = self.builder.compile()
 
+    def translate_node(self,state: State):
+        print("translate_node:",state)
+        messages = state["messages"]
+        if messages:
+            if isinstance(messages, list):
+                messages = messages[-1]
+        print("translate_node:",messages.content)
+        result = self.translate_chain.invoke({"text": messages.content})
+        print("translate_node:",result)
+        return {"messages": AIMessage(content=result)}
+        
     def routes(self,state: State, config: RunnableConfig):
         messages = state["messages"]
         msg_type = state["input_type"]
@@ -78,8 +94,11 @@ class AgentGraph:
         return END
     
     def translate_edge_control(self,state: State):
-        message = state["messages"][-1]
-        if message.media is None:
+        messages = state["messages"]
+        if messages:
+            if isinstance(messages, list):
+                messages = messages[-1]
+        if messages.additional_kwargs.get('image') is None:
             return "text2image"
         
         return 'image2image'

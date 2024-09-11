@@ -238,8 +238,7 @@ def system_prompt(system,context=""):
 
 english_traslate_template = ChatPromptTemplate.from_messages(
     [
-        ("system", "Translate the following into English and only return the translation result:"), 
-        MessagesPlaceholder(variable_name="messages")
+        ("user", "Translate the following into English and only return the translation result: {text}"), 
     ]
 )
 
