@@ -19,8 +19,9 @@ from apps.tasks import tools,TaskFactory,TASK_IMAGE_GEN,TASK_SPEECH
 import uuid
 from langgraph.prebuilt import create_react_agent
 from apps.prompt import AgentPromptTemplate,english_traslate_template,agent_prompt
-from apps.base import State,CustomHumanMessage
+from apps.base import State
 from langchain_core.runnables import  RunnableConfig
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
 
 class AgentGraph:
@@ -56,8 +57,8 @@ class AgentGraph:
         
         self.builder.add_conditional_edges(START, self.routes,
                                            {"tranlate": "tranlate", "speech2text": "speech2text","agent":"agent"})
-        # self.graph = self.builder.compile(checkpointer=checkpointer)
-        self.graph = self.builder.compile()
+        self.graph = self.builder.compile(checkpointer=checkpointer)
+        # self.graph = self.builder.compile()
 
     def routes(self,state: State, config: RunnableConfig):
         messages = state["messages"]
@@ -86,7 +87,7 @@ class AgentGraph:
     def run(self,input):
         config = {"configurable": {"thread_id": str(uuid.uuid4())}}
         events = self.graph.stream(input, config)
-        
+        print(events)
         for event in events:
             print(event)
             for value in event.values():
@@ -123,11 +124,11 @@ class AgentGraph:
 if __name__ == '__main__':
     input_example = {
         "messages":  [
-            CustomHumanMessage(
-                content="今天天气怎么样",
+            HumanMessage(
+                content="画一幅宇宙的图片",
             )
         ],
-        "input_type": "text",
+        "input_type": "image",
         "need_speech": False,
         "status": "in_progress",
     }
