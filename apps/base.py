@@ -160,27 +160,30 @@ class Task(ITask):
     def __call__(self, state: State, config: RunnableConfig):
         resp = []
         output = None
-        message = state["messages"][-1]
+        messages = state["messages"]
+        if messages and isinstance(messages, list):
+            messages = messages[-1]
+
         input_type = state["input_type"]
         
         if input_type == "text":
-            output = self.run(message.content)
+            output = self.run(messages.content)
         elif input_type == "speech":
-            if message.content != "":
-                output = self.run(message.content)
+            if messages.content != "":
+                output = self.run(messages.content)
             else:
-                output = self.run(message.additional_kwargs.get('speech'))
+                output = self.run(messages.additional_kwargs.get('speech'))
         elif input_type == "image":
             # text to image
-            if message.additional_kwargs.get('image') is None and message.content != "":
-                print("text to image:",message)
-                output = self.run(message)
+            if messages.additional_kwargs.get('image') is None and messages.content != "":
+                print("text to image:",messages)
+                output = self.run(messages)
             else:
                 # image to image
-                if isinstance(message.additional_kwargs.get('image'),str):
-                    output = self.run(message,image_path=message.additional_kwargs.get('image'))
+                if isinstance(messages.additional_kwargs.get('image'),str):
+                    output = self.run(messages,image_path=messages.additional_kwargs.get('image'))
                 else:
-                    output = self.run(message,image_obj=message.additional_kwargs.get('image'))
+                    output = self.run(messages,image_obj=messages.additional_kwargs.get('image'))
         
         if isinstance(output,str):
             output = AIMessage(content=output)

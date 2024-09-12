@@ -66,18 +66,15 @@ class AgentGraph:
         # self.graph = self.builder.compile()
 
     def translate_node(self,state: State):
-        print("translate_node:",state)
         messages = state["messages"]
         if messages:
             if isinstance(messages, list):
                 messages = messages[-1]
-        print("translate_node:",messages.content)
-        result = self.translate_chain.invoke({"text": messages.content})
-        print("translate_node:",result)
-        return {"messages": AIMessage(content=result)}
+            result = self.translate_chain.invoke({"text": messages.content})
+            return {"messages": AIMessage(content=result)}
         
     def routes(self,state: State, config: RunnableConfig):
-        messages = state["messages"]
+        # messages = state["messages"]
         msg_type = state["input_type"]
         if msg_type == "text":
             return "agent"
