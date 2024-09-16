@@ -31,6 +31,7 @@ class AgentGraph:
     def __init__(self):
         checkpointer = MemorySaver()
         self.llm = ChatOpenAI(model="llama3.1-fp16:latest",base_url="http://localhost:11434/v1/",api_key="xxx",verbose=True)
+        self.qwen2 = ChatOpenAI(model="qwen2",base_url="http://localhost:11434/v1/",api_key="xxx",verbose=True)
         self.llm_with_tools = self.llm.bind_tools(tools=tools)
         # prompt = hub.pull("wfh/react-agent-executor")
         # prompt.pretty_print()
@@ -100,7 +101,7 @@ class AgentGraph:
         
         return 'image2image'
     
-    def run(self,input):
+    def run(self,input:State):
         config = {"configurable": {"thread_id": str(uuid.uuid4())}}
         events = self.graph.stream(input, config)
         print(events)
@@ -141,7 +142,7 @@ if __name__ == '__main__':
     input_example = {
         "messages":  [
             HumanMessage(
-                content="画一幅宇宙的图片",
+                content="画一幅太阳",
             )
         ],
         "input_type": "image",
@@ -153,6 +154,29 @@ if __name__ == '__main__':
     # g.display()
     # resp = g.translate_chain.invoke({"text":"请画一张地球的图片"})
     # resp = g.llm_with_tools.invoke("draw a earth picture")
-    # resp = g.agent_executor.invoke(input_example)
+    # resp = g.agent_executor.invoke(input_example)e
+    # resp = g.run(input_example)
+    input_example = {
+        "messages":  [
+            HumanMessage(
+                content="超人拯救了太阳",
+                additional_kwargs={"image":"/win/text-generation-webui/apps/pics/output/2024_09_16/1726452758.png"}
+            )
+        ],
+        "input_type": "image",
+        "need_speech": False,
+        "status": "in_progress",
+    }
+    # resp = g.run(input_example)
+    input_example = {
+        "messages":  [
+            HumanMessage(
+                content="俄乌战争进展",
+            )
+        ],
+        "input_type": "text",
+        "need_speech": False,
+        "status": "in_progress",
+    }
     resp = g.run(input_example)
     # print(resp)
