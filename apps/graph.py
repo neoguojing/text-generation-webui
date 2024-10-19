@@ -39,7 +39,7 @@ class AgentGraph:
         self.prompt = agent_prompt
         self.prompt = self.prompt.partial(system_message="You should provide accurate data for the chart_generator to use.")
         self.prompt = self.prompt.partial(tool_names=", ".join([tool.name for tool in tools]))
-        self.agent_executor = create_react_agent(self.llm, tools, state_modifier=self.prompt)
+        self.agent_executor = create_react_agent(self.llm, tools, state_modifier=self.prompt,checkpointer=checkpointer)
 
         self.builder = StateGraph(State)
         

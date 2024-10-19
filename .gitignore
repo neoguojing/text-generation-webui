@@ -54,3 +54,4 @@ files/
 
 default.faiss
 default.pkl
+*.wav
